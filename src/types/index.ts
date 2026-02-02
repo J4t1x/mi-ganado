@@ -1,0 +1,343 @@
+// Enums
+export enum Especie {
+  BOVINO = 'BOVINO',
+  OVINO = 'OVINO',
+  CAPRINO = 'CAPRINO',
+  PORCINO = 'PORCINO',
+  EQUINO = 'EQUINO',
+}
+
+export enum TipoTitular {
+  PERSONA_NATURAL = 'PERSONA_NATURAL',
+  EMPRESA = 'EMPRESA',
+}
+
+export enum TipoEstablecimiento {
+  PROPIO = 'PROPIO',
+  SOCIO = 'SOCIO',
+  EXTERNO = 'EXTERNO',
+}
+
+export enum Sexo {
+  MACHO = 'MACHO',
+  HEMBRA = 'HEMBRA',
+}
+
+export enum EstadoGeneral {
+  ACTIVO = 'ACTIVO',
+  INACTIVO = 'INACTIVO',
+}
+
+export enum EstadoAnimal {
+  ACTIVO = 'ACTIVO',
+  VENDIDO = 'VENDIDO',
+  MUERTO = 'MUERTO',
+}
+
+export enum TipoIdentificador {
+  DIIO_VISUAL = 'DIIO_VISUAL',
+  RFID = 'RFID',
+  CHIP = 'CHIP',
+  BOLUS = 'BOLUS',
+}
+
+export enum OrigenDato {
+  XR5000 = 'XR5000',
+  MANUAL = 'MANUAL',
+}
+
+export enum TipoMovimiento {
+  TRASLADO = 'TRASLADO',
+  VENTA = 'VENTA',
+  COMPRA = 'COMPRA',
+  MUERTE = 'MUERTE',
+  AJUSTE = 'AJUSTE',
+}
+
+export enum EstadoMovimiento {
+  BORRADOR = 'BORRADOR',
+  CONFIRMADO = 'CONFIRMADO',
+  INFORMADO = 'INFORMADO',
+}
+
+export enum TipoDocumento {
+  GUIA_DESPACHO = 'GUIA_DESPACHO',
+  FACTURA = 'FACTURA',
+  FORMULARIO_ENTREGA = 'FORMULARIO_ENTREGA',
+}
+
+// Interfaces
+export interface Titular {
+  id: string;
+  rut: string;
+  nombreRazonSocial: string;
+  tipo: TipoTitular;
+  contacto?: string;
+  estado: EstadoGeneral;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Establecimiento {
+  id: string;
+  titularId: string;
+  nombre: string;
+  rolPredial?: string;
+  ubicacion?: string;
+  tipo: TipoEstablecimiento;
+  estado: EstadoGeneral;
+  createdAt: string;
+  updatedAt: string;
+  titular?: Titular;
+}
+
+export interface Animal {
+  id: string;
+  especie: Especie;
+  sexo?: Sexo;
+  fechaNacimiento?: string;
+  titularActualId?: string;
+  establecimientoActualId?: string;
+  loteId?: string;
+  estado: EstadoAnimal;
+  fechaAlta: string;
+  fechaBaja?: string;
+  createdAt: string;
+  updatedAt: string;
+  titularActual?: Titular;
+  establecimientoActual?: Establecimiento;
+  lote?: Lote;
+  identificadores?: Identificador[];
+}
+
+export interface Identificador {
+  id: string;
+  animalId: string;
+  tipo: TipoIdentificador;
+  codigo: string;
+  activo: boolean;
+  fechaAsignacion: string;
+  fechaBaja?: string;
+  motivoBaja?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Lote {
+  id: string;
+  establecimientoId: string;
+  nombre: string;
+  descripcion?: string;
+  estado: EstadoGeneral;
+  createdAt: string;
+  updatedAt: string;
+  establecimiento?: Establecimiento;
+  _count?: {
+    animales: number;
+  };
+}
+
+export interface SesionPesaje {
+  id: string;
+  loteId?: string;
+  fecha: string;
+  equipo?: string;
+  operador?: string;
+  observaciones?: string;
+  createdAt: string;
+  updatedAt: string;
+  lote?: Lote;
+  pesajes?: Pesaje[];
+}
+
+export interface Pesaje {
+  id: string;
+  sesionId: string;
+  animalId: string;
+  peso: number;
+  fechaHora: string;
+  origenDato: OrigenDato;
+  valido: boolean;
+  createdAt: string;
+  updatedAt: string;
+  animal?: Animal;
+}
+
+export interface Movimiento {
+  id: string;
+  tipo: TipoMovimiento;
+  fecha: string;
+  establecimientoOrigenId?: string;
+  establecimientoDestinoId?: string;
+  titularOrigenId?: string;
+  titularDestinoId?: string;
+  estado: EstadoMovimiento;
+  createdAt: string;
+  updatedAt: string;
+  establecimientoOrigen?: Establecimiento;
+  establecimientoDestino?: Establecimiento;
+  titularOrigen?: Titular;
+  titularDestino?: Titular;
+  detalles?: MovimientoDetalle[];
+  documentos?: Documento[];
+}
+
+export interface MovimientoDetalle {
+  id: string;
+  movimientoId: string;
+  animalId: string;
+  createdAt: string;
+  animal?: Animal;
+}
+
+export interface Documento {
+  id: string;
+  movimientoId: string;
+  tipo: TipoDocumento;
+  folio?: string;
+  fecha?: string;
+  archivoUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// API Response types
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+export interface ApiError {
+  statusCode: number;
+  message: string;
+  error?: string;
+}
+
+// Dashboard stats
+export interface DashboardStats {
+  totalAnimales: number;
+  animalesActivos: number;
+  animalesVendidos: number;
+  animalesMuertos: number;
+  totalLotes: number;
+  totalEstablecimientos: number;
+  pesajesUltimaSemana: number;
+  movimientosUltimoMes: number;
+}
+
+// DTOs para Titulares
+export interface CreateTitularDto {
+  rut: string;
+  nombreRazonSocial: string;
+  tipo: TipoTitular;
+  contacto?: string;
+}
+
+export interface UpdateTitularDto {
+  nombreRazonSocial?: string;
+  tipo?: TipoTitular;
+  contacto?: string;
+  estado?: EstadoGeneral;
+}
+
+export interface TitularWithEstablecimientos extends Titular {
+  establecimientos?: Establecimiento[];
+  _count?: {
+    establecimientos: number;
+    animales: number;
+  };
+}
+
+// DTOs para Establecimientos
+export interface CreateEstablecimientoDto {
+  titularId: string;
+  nombre: string;
+  rolPredial?: string;
+  ubicacion?: string;
+  tipo: TipoEstablecimiento;
+}
+
+export interface UpdateEstablecimientoDto {
+  titularId?: string;
+  nombre?: string;
+  rolPredial?: string;
+  ubicacion?: string;
+  tipo?: TipoEstablecimiento;
+  estado?: EstadoGeneral;
+}
+
+export interface EstablecimientoWithRelations extends Omit<Establecimiento, 'titular'> {
+  titular?: {
+    id: string;
+    rut: string;
+    nombreRazonSocial: string;
+    tipo: TipoTitular;
+  };
+  _count?: {
+    lotes: number;
+    animales: number;
+  };
+}
+
+// DTOs para Animales
+export interface CreateAnimalDto {
+  especie?: Especie;
+  sexo?: Sexo;
+  fechaNacimiento?: string;
+  titularActualId?: string;
+  establecimientoActualId?: string;
+  loteId?: string;
+  identificadores?: CreateIdentificadorDto[];
+}
+
+export interface UpdateAnimalDto {
+  especie?: Especie;
+  sexo?: Sexo;
+  fechaNacimiento?: string;
+  titularActualId?: string;
+  establecimientoActualId?: string;
+  loteId?: string;
+  estado?: EstadoAnimal;
+}
+
+export interface AnimalWithRelations extends Animal {
+  identificadores?: Identificador[];
+  pesajes?: Pesaje[];
+  _count?: {
+    identificadores: number;
+    pesajes: number;
+  };
+}
+
+// DTOs para Identificadores
+export interface CreateIdentificadorDto {
+  tipo: TipoIdentificador;
+  codigo: string;
+  fechaAsignacion?: string;
+}
+
+export interface UpdateIdentificadorDto {
+  activo?: boolean;
+  fechaBaja?: string;
+  motivoBaja?: string;
+}
+
+// DTOs para Lotes
+export interface CreateLoteDto {
+  nombre: string;
+  establecimientoId: string;
+  descripcion?: string;
+}
+
+export interface UpdateLoteDto {
+  nombre?: string;
+  establecimientoId?: string;
+  descripcion?: string;
+  estado?: EstadoGeneral;
+}
+

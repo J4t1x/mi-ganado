@@ -21,25 +21,38 @@ class ApiClient {
   ): Promise<T> {
     const token = this.getToken();
     
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(API_KEY && { 'X-API-Key': API_KEY }),
-        ...(token && { Authorization: `Bearer ${token}` }),
-        ...options?.headers,
-      },
-    });
+    try {
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(API_KEY && { 'X-API-Key': API_KEY }),
+          ...(token && { Authorization: `Bearer ${token}` }),
+          ...options?.headers,
+        },
+        mode: 'cors',
+        credentials: 'include',
+      });
 
-    if (!response.ok) {
-      const error: ApiError = await response.json().catch(() => ({
-        statusCode: response.status,
-        message: response.statusText,
-      }));
+      if (!response.ok) {
+        const error: ApiError = await response.json().catch(() => ({
+          statusCode: response.status,
+          message: response.statusText,
+        }));
+        throw error;
+      }
+
+      return response.json();
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        console.error('Error de conexión con el backend:', this.baseURL);
+        throw {
+          statusCode: 0,
+          message: 'No se puede conectar con el servidor. Verifica que el backend esté ejecutándose.',
+        } as ApiError;
+      }
       throw error;
     }
-
-    return response.json();
   }
 
   async get<T>(endpoint: string): Promise<T> {
@@ -70,25 +83,35 @@ export const apiClient = new ApiClient();
 // Auth service (uses core backend, not ganado module)
 export const authService = {
   async login(email: string, password: string) {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(API_KEY && { 'X-API-Key': API_KEY }),
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(API_KEY && { 'X-API-Key': API_KEY }),
+        },
+        body: JSON.stringify({ email, password }),
+        mode: 'cors',
+        credentials: 'include',
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
+      if (!response.ok) {
+        const error = await response.json();
+        throw error;
+      }
+
+      const data = await response.json();
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('access_token', data.access_token);
+      }
+      return data;
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        console.error('Error de conexión con el backend:', API_BASE_URL);
+        throw new Error('No se puede conectar con el servidor. Verifica que el backend esté ejecutándose.');
+      }
       throw error;
     }
-
-    const data = await response.json();
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('access_token', data.access_token);
-    }
-    return data;
   },
 
   async logout() {
@@ -98,19 +121,29 @@ export const authService = {
   },
 
   async getProfile() {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-    const response = await fetch(`${API_BASE_URL}/auth/profile`, {
-      headers: {
-        ...(API_KEY && { 'X-API-Key': API_KEY }),
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+        headers: {
+          ...(API_KEY && { 'X-API-Key': API_KEY }),
+          Authorization: `Bearer ${token}`,
+        },
+        mode: 'cors',
+        credentials: 'include',
+      });
 
-    if (!response.ok) {
-      throw new Error('Not authenticated');
+      if (!response.ok) {
+        throw new Error('Not authenticated');
+      }
+
+      return response.json();
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        console.error('Error de conexión con el backend:', API_BASE_URL);
+        throw new Error('No se puede conectar con el servidor.');
+      }
+      throw error;
     }
-
-    return response.json();
   },
 
   isAuthenticated(): boolean {

@@ -103,7 +103,12 @@ export default function AnimalDetailPage() {
           <CardContent className="space-y-4">
             <div>
               <p className="text-sm text-muted-foreground">Especie</p>
-              <p className="font-medium capitalize">{animal.especie}</p>
+              <p className="font-medium">{animal.especie}</p>
+            </div>
+            <Separator />
+            <div>
+              <p className="text-sm text-muted-foreground">Raza</p>
+              <p className="font-medium">{animal.raza?.nombre || 'No especificada'}</p>
             </div>
             <Separator />
             <div>

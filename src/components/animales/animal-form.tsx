@@ -25,10 +25,12 @@ import {
 } from '@/types';
 import { titularesService } from '@/lib/api/titulares';
 import { establecimientosService } from '@/lib/api/establecimientos';
+import { razasService } from '@/lib/api/razas';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 
 const animalSchema = z.object({
   especie: z.nativeEnum(Especie).default(Especie.BOVINO),
+  razaId: z.string().optional(),
   sexo: z.nativeEnum(Sexo).optional(),
   fechaNacimiento: z.string().optional(),
   titularActualId: z.string().optional(),
@@ -52,8 +54,10 @@ interface AnimalFormProps {
 export function AnimalForm({ animal, onSubmit, onCancel, isLoading }: AnimalFormProps) {
   const [titulares, setTitulares] = useState<any[]>([]);
   const [establecimientos, setEstablecimientos] = useState<any[]>([]);
+  const [razas, setRazas] = useState<any[]>([]);
   const [identificadores, setIdentificadores] = useState<any[]>([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [loadingRazas, setLoadingRazas] = useState(false);
 
   const {
     register,
@@ -69,6 +73,7 @@ export function AnimalForm({ animal, onSubmit, onCancel, isLoading }: AnimalForm
   });
 
   const selectedTitularId = watch('titularActualId');
+  const selectedEspecie = watch('especie');
 
   useEffect(() => {
     loadInitialData();
@@ -81,6 +86,14 @@ export function AnimalForm({ animal, onSubmit, onCancel, isLoading }: AnimalForm
       setEstablecimientos([]);
     }
   }, [selectedTitularId]);
+
+  useEffect(() => {
+    if (selectedEspecie) {
+      loadRazas(selectedEspecie);
+      // Limpiar la raza seleccionada cuando cambia la especie
+      setValue('razaId', undefined);
+    }
+  }, [selectedEspecie]);
 
   const loadInitialData = async () => {
     try {
@@ -99,6 +112,19 @@ export function AnimalForm({ animal, onSubmit, onCancel, isLoading }: AnimalForm
       setEstablecimientos(res.data || []);
     } catch (error) {
       console.error('Error loading establecimientos:', error);
+    }
+  };
+
+  const loadRazas = async (especie: Especie) => {
+    setLoadingRazas(true);
+    try {
+      const razasData = await razasService.getByEspecie(especie);
+      setRazas(razasData || []);
+    } catch (error) {
+      console.error('Error loading razas:', error);
+      setRazas([]);
+    } finally {
+      setLoadingRazas(false);
     }
   };
 
@@ -123,6 +149,7 @@ export function AnimalForm({ animal, onSubmit, onCancel, isLoading }: AnimalForm
     // Clean up data: remove empty strings and convert to undefined
     const submitData: CreateAnimalDto = {
       especie: data.especie,
+      razaId: data.razaId,
       sexo: data.sexo,
       fechaNacimiento: data.fechaNacimiento && data.fechaNacimiento.trim() !== '' 
         ? data.fechaNacimiento 
@@ -179,6 +206,39 @@ export function AnimalForm({ animal, onSubmit, onCancel, isLoading }: AnimalForm
               </Select>
               {errors.especie && (
                 <p className="text-sm text-destructive">{errors.especie.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="razaId">Raza</Label>
+              <Select
+                value={watch('razaId')}
+                onValueChange={(value) => setValue('razaId', value)}
+                disabled={!selectedEspecie || loadingRazas}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar raza" />
+                </SelectTrigger>
+                <SelectContent>
+                  {loadingRazas ? (
+                    <div className="flex items-center justify-center p-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    </div>
+                  ) : razas.length === 0 ? (
+                    <div className="p-2 text-sm text-muted-foreground text-center">
+                      No hay razas disponibles
+                    </div>
+                  ) : (
+                    razas.map((raza) => (
+                      <SelectItem key={raza.id} value={raza.id}>
+                        {raza.nombre}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              {errors.razaId && (
+                <p className="text-sm text-destructive">{errors.razaId.message}</p>
               )}
             </div>
 

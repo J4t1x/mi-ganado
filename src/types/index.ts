@@ -5,6 +5,7 @@ export enum Especie {
   CAPRINO = 'CAPRINO',
   PORCINO = 'PORCINO',
   EQUINO = 'EQUINO',
+  CAMELLIDO = 'CAMELLIDO',
 }
 
 export enum TipoTitular {
@@ -66,6 +67,17 @@ export enum TipoDocumento {
   FORMULARIO_ENTREGA = 'FORMULARIO_ENTREGA',
 }
 
+export enum CategoriaAnimal {
+  TERNERO = 'TERNERO',
+  TERNERA = 'TERNERA',
+  NOVILLO = 'NOVILLO',
+  VAQUILLA = 'VAQUILLA',
+  TORO = 'TORO',
+  TORITO = 'TORITO',
+  VACA = 'VACA',
+  BUEY = 'BUEY',
+}
+
 // Interfaces
 export interface Titular {
   id: string;
@@ -91,10 +103,22 @@ export interface Establecimiento {
   titular?: Titular;
 }
 
+export interface Raza {
+  id: string;
+  nombre: string;
+  especie: Especie;
+  descripcion?: string;
+  estado: EstadoGeneral;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Animal {
   id: string;
   especie: Especie;
+  razaId?: string;
   sexo?: Sexo;
+  categoria?: CategoriaAnimal;
   fechaNacimiento?: string;
   titularActualId?: string;
   establecimientoActualId?: string;
@@ -102,12 +126,24 @@ export interface Animal {
   estado: EstadoAnimal;
   fechaAlta: string;
   fechaBaja?: string;
+  // Campos de trazabilidad SIPEC/SINAP
+  rupOrigen?: string;
+  rupUltimoMovimiento?: string;
+  exportableChina?: boolean;
+  exportableUE?: boolean;
+  pabco?: boolean;
+  trazabilidadNacimiento?: boolean;
+  trazabilidadCompleta?: boolean;
+  usoAnabolicos?: boolean;
+  usoMedicamentoNoPermitido?: boolean;
   createdAt: string;
   updatedAt: string;
+  raza?: Raza;
   titularActual?: Titular;
   establecimientoActual?: Establecimiento;
   lote?: Lote;
   identificadores?: Identificador[];
+  manejosSanitarios?: ManejoSanitario[];
 }
 
 export interface Identificador {
@@ -119,8 +155,20 @@ export interface Identificador {
   fechaAsignacion: string;
   fechaBaja?: string;
   motivoBaja?: string;
+  fechaSipec?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ManejoSanitario {
+  id: string;
+  animalId: string;
+  fecha: string;
+  descripcion?: string;
+  rup?: string;
+  createdAt: string;
+  updatedAt: string;
+  animal?: Animal;
 }
 
 export interface Lote {
@@ -287,22 +335,46 @@ export interface EstablecimientoWithRelations extends Omit<Establecimiento, 'tit
 // DTOs para Animales
 export interface CreateAnimalDto {
   especie?: Especie;
+  razaId?: string;
   sexo?: Sexo;
+  categoria?: CategoriaAnimal;
   fechaNacimiento?: string;
   titularActualId?: string;
   establecimientoActualId?: string;
   loteId?: string;
   identificadores?: CreateIdentificadorDto[];
+  // Campos de trazabilidad
+  rupOrigen?: string;
+  rupUltimoMovimiento?: string;
+  exportableChina?: boolean;
+  exportableUE?: boolean;
+  pabco?: boolean;
+  trazabilidadNacimiento?: boolean;
+  trazabilidadCompleta?: boolean;
+  usoAnabolicos?: boolean;
+  usoMedicamentoNoPermitido?: boolean;
 }
 
 export interface UpdateAnimalDto {
   especie?: Especie;
+  razaId?: string;
   sexo?: Sexo;
+  categoria?: CategoriaAnimal;
   fechaNacimiento?: string;
   titularActualId?: string;
   establecimientoActualId?: string;
   loteId?: string;
   estado?: EstadoAnimal;
+  // Campos de trazabilidad
+  rupOrigen?: string;
+  rupUltimoMovimiento?: string;
+  exportableChina?: boolean;
+  exportableUE?: boolean;
+  pabco?: boolean;
+  trazabilidadNacimiento?: boolean;
+  trazabilidadCompleta?: boolean;
+  usoAnabolicos?: boolean;
+  usoMedicamentoNoPermitido?: boolean;
 }
 
 export interface AnimalWithRelations extends Animal {

@@ -1,12 +1,20 @@
 # Mi Ganado - Sistema de Gestión Ganadera Digital
 
-**Versión:** 1.0  
+**Versión:** 1.0.0  
 **Estado:** En desarrollo activo  
-**Última actualización:** Febrero 2026
+**Última actualización:** 4 de Febrero 2026
 
 ## Descripción
 
 **Mi Ganado** es una plataforma web progresiva (PWA) diseñada para la gestión integral de ganado bovino en Chile. El sistema permite a titulares de establecimientos ganaderos centralizar, trazar y gestionar eficientemente toda la información de su ganado, facilitando el cumplimiento normativo con SIPEC/SAG.
+
+### Contexto del Proyecto
+
+Este proyecto es parte de un ecosistema más amplio que incluye:
+- **Frontend (este repo):** Aplicación Next.js para gestión ganadera
+- **Backend:** `backend-agente` - API NestJS con módulo ganado
+- **Base de datos:** PostgreSQL con Prisma ORM
+- **Infraestructura:** Railway (producción) + Docker (desarrollo)
 
 ### Características Principales
 
@@ -57,15 +65,28 @@ npm install
 
 3. **Configurar variables de entorno**
 
-Crear archivo `.env.local`:
+Crear archivo `.env.local` en la raíz del proyecto:
 ```env
 # Backend API
 NEXT_PUBLIC_API_URL=http://localhost:8089
-NEXT_PUBLIC_API_KEY=tu_api_key_aqui
+
+# API Key (REQUERIDA)
+# Obtener del administrador del backend o generar una nueva
+NEXT_PUBLIC_API_KEY=cdae5ecff427cf5474ff55279aa8b27a72d50cc670b72c79f362aefc6e98f2a7
 
 # Para producción
 # NEXT_PUBLIC_API_URL=https://jard.up.railway.app
 ```
+
+**⚠️ IMPORTANTE:** El backend requiere una API Key válida en todas las peticiones. Sin ella, recibirás errores 401 (Unauthorized).
+
+Para generar una nueva API Key:
+```bash
+cd ../backend-agente
+npx ts-node scripts/create-api-key.ts <userId> "Mi Ganado Frontend" 365
+```
+
+Ver más detalles en [`/docs/ENV-CONFIG.md`](./docs/ENV-CONFIG.md)
 
 4. **Iniciar el servidor de desarrollo**
 ```bash
@@ -84,6 +105,8 @@ Para probar el sistema, usa las siguientes credenciales:
 **Email:** `admin@miganado.cl`  
 **Contraseña:** `admin123`  
 **Rol:** ADMIN
+
+**Nota:** Los tokens JWT expiran después de cierto tiempo. Si recibes errores 401, cierra sesión y vuelve a iniciar sesión para obtener un nuevo token.
 
 ## Estructura del Proyecto
 
@@ -219,17 +242,71 @@ Ver documentación completa en `/docs/oficial/DOCUMENTO-OFICIAL.md`
 Para ejecutar el proyecto completo, necesitas iniciar el backend:
 
 ```bash
-cd /Users/ja/Documents/GitHub/backend-agente
+cd ../backend-agente
 npm run start:dev
 ```
 
 El backend estará disponible en `http://localhost:8089`
 
+### Verificar que el Backend está Corriendo
+
+```bash
+# Verificar health check
+curl http://localhost:8089/health
+
+# Debería retornar:
+# {"status":"ok","timestamp":"...","uptime":...}
+```
+
+## Troubleshooting
+
+### Error 401 (Unauthorized) en las peticiones
+
+**Causa:** Token JWT expirado o API Key inválida
+
+**Solución:**
+1. Verifica que `NEXT_PUBLIC_API_KEY` esté configurada en `.env.local`
+2. Cierra sesión y vuelve a iniciar sesión en la aplicación
+3. Si el problema persiste, limpia el localStorage:
+   ```javascript
+   // En la consola del navegador (F12)
+   localStorage.removeItem('access_token');
+   window.location.href = '/login';
+   ```
+
+### Error 500 en `/animales` u otros endpoints
+
+**Causa:** Error del servidor, generalmente por falta de autenticación
+
+**Solución:**
+1. Verifica que el backend esté corriendo: `curl http://localhost:8089/health`
+2. Revisa los logs del backend para más detalles
+3. Asegúrate de estar autenticado correctamente
+
+### No se puede conectar con el servidor
+
+**Causa:** Backend no está corriendo o URL incorrecta
+
+**Solución:**
+1. Verifica que el backend esté corriendo en el puerto 8089
+2. Verifica que `NEXT_PUBLIC_API_URL` en `.env.local` sea correcta
+3. Verifica que no haya problemas de CORS
+
+### Los datos no se cargan en el dashboard
+
+**Causa:** Token expirado o problemas de autenticación
+
+**Solución:**
+1. Abre la consola del navegador (F12) y revisa los errores
+2. Verifica el Network tab para ver qué peticiones fallan
+3. Cierra sesión y vuelve a iniciar sesión
+
 ## Documentación Adicional
 
-- **Documento oficial:** `/docs/oficial/DOCUMENTO-OFICIAL.md`
-- **Implementación de animales:** `IMPLEMENTACION-ANIMALES.md`
-- **Credenciales de prueba:** `CREDENCIALES-PRUEBA.md`
+- **Configuración de entorno:** [`/docs/ENV-CONFIG.md`](./docs/ENV-CONFIG.md)
+- **Credenciales de prueba:** [`/docs/CREDENCIALES-PRUEBA.md`](./docs/CREDENCIALES-PRUEBA.md)
+- **Cálculo de producto final:** [`/docs/CALCULO-PF-MI-GANADO.md`](./docs/CALCULO-PF-MI-GANADO.md)
+- **Propuesta SaaS:** [`/docs/PROPUESTA-SAAS-MI-GANADO.md`](./docs/PROPUESTA-SAAS-MI-GANADO.md)
 
 ## Próximos Pasos
 
@@ -247,12 +324,41 @@ El backend estará disponible en `http://localhost:8089`
 - [ ] Notificaciones push
 - [ ] Multi-especie (ovinos, caprinos)
 
+## Arquitectura de Autenticación
+
+El sistema utiliza un esquema de autenticación de dos niveles:
+
+1. **API Key (X-API-Key header):** Requerida para todas las peticiones al backend
+   - Se configura en `NEXT_PUBLIC_API_KEY`
+   - Valida que la aplicación frontend está autorizada
+   - Se envía en todas las peticiones HTTP
+
+2. **JWT Token (Authorization header):** Requerido para endpoints protegidos
+   - Se obtiene al hacer login exitoso
+   - Se almacena en `localStorage` como `access_token`
+   - Expira después de cierto tiempo (requiere re-login)
+   - Se envía como `Bearer <token>` en peticiones autenticadas
+
+### Flujo de Autenticación
+
+```
+1. Usuario ingresa email/password
+2. Frontend envía POST /auth/login con API Key
+3. Backend valida credenciales y retorna JWT token
+4. Frontend guarda token en localStorage
+5. Todas las peticiones subsecuentes incluyen:
+   - X-API-Key header (API Key)
+   - Authorization header (JWT token)
+```
+
 ## Soporte
 
 Para problemas o dudas:
-1. Revisar la documentación en `/docs`
-2. Verificar logs del backend
-3. Usar Network tab del navegador para debugging
+1. Revisar la sección **Troubleshooting** arriba
+2. Revisar la documentación en `/docs`
+3. Verificar logs del backend: `cd ../backend-agente && npm run start:dev`
+4. Usar Network tab del navegador (F12) para debugging de peticiones HTTP
+5. Verificar la consola del navegador para errores de JavaScript
 
 ## Licencia
 

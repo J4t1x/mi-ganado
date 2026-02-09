@@ -14,6 +14,8 @@ import {
   Building2,
   Users,
   Dna,
+  Lock,
+  Syringe,
 } from 'lucide-react';
 
 const navigation = [
@@ -23,12 +25,14 @@ const navigation = [
   { name: 'Pesajes', href: '/dashboard/pesajes', icon: Scale },
   { name: 'Movimientos', href: '/dashboard/movimientos', icon: ArrowRightLeft },
   { name: 'Reportes', href: '/dashboard/reportes', icon: BarChart3 },
+  { name: 'Sanitario', href: '/dashboard/sanitario', icon: Syringe },
 ];
 
 const secondaryNavigation = [
   { name: 'Establecimientos', href: '/dashboard/configuracion/establecimientos', icon: Building2 },
   { name: 'Titulares', href: '/dashboard/configuracion/titulares', icon: Users },
   { name: 'Razas', href: '/dashboard/configuracion/razas', icon: Dna },
+  { name: 'Contraseña', href: '/dashboard/configuracion/cambiar-password', icon: Lock },
   { name: 'Configuración', href: '/dashboard/configuracion', icon: Settings },
 ];
 

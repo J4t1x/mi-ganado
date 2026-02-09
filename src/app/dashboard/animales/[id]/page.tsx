@@ -17,8 +17,19 @@ import {
   Tag,
   Scale,
   FileText,
+  TrendingUp,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+} from 'recharts';
 
 export default function AnimalDetailPage() {
   const params = useParams();
@@ -219,22 +230,109 @@ export default function AnimalDetailPage() {
         </CardHeader>
         <CardContent>
           {animal.pesajes && animal.pesajes.length > 0 ? (
-            <div className="space-y-3">
-              {animal.pesajes.slice(0, 5).map((pesaje) => (
-                <div
-                  key={pesaje.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
-                >
-                  <div>
-                    <p className="font-medium">{pesaje.peso} kg</p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(pesaje.fechaHora).toLocaleDateString('es-CL')}
-                    </p>
+            <>
+              {(() => {
+                const sorted = [...animal.pesajes].sort(
+                  (a, b) => new Date(a.fechaHora).getTime() - new Date(b.fechaHora).getTime()
+                );
+                const chartData = sorted.map((p) => ({
+                  fecha: new Date(p.fechaHora).toLocaleDateString('es-CL'),
+                  peso: p.peso,
+                  origen: p.origenDato,
+                }));
+                const pesos = sorted.map((p) => p.peso);
+                const pesoMin = Math.min(...pesos);
+                const pesoMax = Math.max(...pesos);
+                const pesoPromedio = Math.round(pesos.reduce((a, b) => a + b, 0) / pesos.length);
+
+                let gdp: number | null = null;
+                if (sorted.length >= 2) {
+                  const first = sorted[0];
+                  const last = sorted[sorted.length - 1];
+                  const days = Math.max(
+                    1,
+                    Math.round(
+                      (new Date(last.fechaHora).getTime() - new Date(first.fechaHora).getTime()) /
+                        (1000 * 60 * 60 * 24)
+                    )
+                  );
+                  gdp = (last.peso - first.peso) / days;
+                }
+
+                return (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="text-center p-2 bg-muted/50 rounded-lg">
+                        <p className="text-xs text-muted-foreground">Mínimo</p>
+                        <p className="text-lg font-bold">{pesoMin} kg</p>
+                      </div>
+                      <div className="text-center p-2 bg-muted/50 rounded-lg">
+                        <p className="text-xs text-muted-foreground">Máximo</p>
+                        <p className="text-lg font-bold">{pesoMax} kg</p>
+                      </div>
+                      <div className="text-center p-2 bg-muted/50 rounded-lg">
+                        <p className="text-xs text-muted-foreground">Promedio</p>
+                        <p className="text-lg font-bold">{pesoPromedio} kg</p>
+                      </div>
+                      <div className="text-center p-2 bg-muted/50 rounded-lg">
+                        <p className="text-xs text-muted-foreground">GDP</p>
+                        <p className={`text-lg font-bold ${gdp !== null && gdp >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {gdp !== null ? `${gdp >= 0 ? '+' : ''}${gdp.toFixed(2)} kg/d` : '-'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {sorted.length >= 2 && (
+                      <ResponsiveContainer width="100%" height={250}>
+                        <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis dataKey="fecha" tick={{ fontSize: 11 }} />
+                          <YAxis
+                            domain={[Math.floor(pesoMin * 0.95), Math.ceil(pesoMax * 1.05)]}
+                            tick={{ fontSize: 11 }}
+                            unit=" kg"
+                          />
+                          <Tooltip
+                            formatter={(value) => [`${value} kg`, 'Peso']}
+                          />
+                          <ReferenceLine y={pesoPromedio} stroke="#6b7280" strokeDasharray="3 3" label={{ value: 'Prom.', fontSize: 10 }} />
+                          <Line
+                            type="monotone"
+                            dataKey="peso"
+                            stroke="hsl(var(--primary))"
+                            strokeWidth={2}
+                            dot={{ r: 4 }}
+                            activeDot={{ r: 6 }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    )}
+
+                    <Separator />
+
+                    <div className="space-y-3">
+                      {[...animal.pesajes]
+                        .sort((a, b) => new Date(b.fechaHora).getTime() - new Date(a.fechaHora).getTime())
+                        .slice(0, 10)
+                        .map((pesaje) => (
+                          <div
+                            key={pesaje.id}
+                            className="flex items-center justify-between p-3 border rounded-lg"
+                          >
+                            <div>
+                              <p className="font-medium">{pesaje.peso} kg</p>
+                              <p className="text-sm text-muted-foreground">
+                                {new Date(pesaje.fechaHora).toLocaleDateString('es-CL')}
+                              </p>
+                            </div>
+                            <Badge variant="outline">{pesaje.origenDato}</Badge>
+                          </div>
+                        ))}
+                    </div>
                   </div>
-                  <Badge variant="outline">{pesaje.origenDato}</Badge>
-                </div>
-              ))}
-            </div>
+                );
+              })()}
+            </>
           ) : (
             <p className="text-center text-muted-foreground py-4">
               No hay pesajes registrados

@@ -46,10 +46,21 @@ import {
   Trash2,
   Search,
   RefreshCw,
+  TrendingUp,
 } from 'lucide-react';
 import { lotesService, LoteWithStats } from '@/lib/api/lotes';
 import { animalesService } from '@/lib/api/animales';
+import { pesajesService, SesionPesaje } from '@/lib/api/pesajes';
 import { toast } from 'sonner';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
 interface AnimalInLote {
   id: string;
@@ -82,6 +93,7 @@ export default function LoteDetailPage() {
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
   const [animalToRemove, setAnimalToRemove] = useState<string | null>(null);
   const [loadingAction, setLoadingAction] = useState(false);
+  const [sesiones, setSesiones] = useState<SesionPesaje[]>([]);
 
   useEffect(() => {
     loadData();
@@ -90,12 +102,14 @@ export default function LoteDetailPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [loteData, animalesData] = await Promise.all([
+      const [loteData, animalesData, sesionesData] = await Promise.all([
         lotesService.getById(params.id as string),
         lotesService.getAnimales(params.id as string),
+        pesajesService.getSesiones({ loteId: params.id as string, limit: 100 }),
       ]);
       setLote(loteData);
       setAnimales(animalesData);
+      setSesiones(sesionesData.data);
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : 'Error al cargar datos del lote');
       router.push('/dashboard/lotes');
@@ -282,6 +296,109 @@ export default function LoteDetailPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* SP-15: Advanced Stats */}
+      {sesiones.length > 0 && (() => {
+        const sorted = [...sesiones]
+          .filter((s) => s.pesoPromedio)
+          .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+
+        const chartData = sorted.map((s) => ({
+          fecha: new Date(s.fecha).toLocaleDateString('es-CL'),
+          peso: Math.round(s.pesoPromedio || 0),
+          pesajes: s.totalPesajes || 0,
+        }));
+
+        let gdp: number | null = null;
+        if (sorted.length >= 2) {
+          const first = sorted[0];
+          const last = sorted[sorted.length - 1];
+          const days = Math.max(
+            1,
+            Math.round(
+              (new Date(last.fecha).getTime() - new Date(first.fecha).getTime()) /
+                (1000 * 60 * 60 * 24)
+            )
+          );
+          gdp = ((last.pesoPromedio || 0) - (first.pesoPromedio || 0)) / days;
+        }
+
+        const pesos = sorted.map((s) => s.pesoPromedio || 0);
+        const pesoMin = Math.round(Math.min(...pesos));
+        const pesoMax = Math.round(Math.max(...pesos));
+        const dispersion = pesoMax - pesoMin;
+        const totalPesajes = sesiones.reduce((a, s) => a + (s.totalPesajes || 0), 0);
+
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Evolución de Peso del Lote
+              </CardTitle>
+              <CardDescription>
+                {sorted.length} sesiones de pesaje — {totalPesajes} pesajes totales
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                <div className="text-center p-2 bg-muted/50 rounded-lg">
+                  <p className="text-xs text-muted-foreground">Peso Prom. Actual</p>
+                  <p className="text-lg font-bold">
+                    {lote.pesoPromedio ? `${Math.round(lote.pesoPromedio)} kg` : '-'}
+                  </p>
+                </div>
+                <div className="text-center p-2 bg-muted/50 rounded-lg">
+                  <p className="text-xs text-muted-foreground">Mínimo</p>
+                  <p className="text-lg font-bold">{pesoMin} kg</p>
+                </div>
+                <div className="text-center p-2 bg-muted/50 rounded-lg">
+                  <p className="text-xs text-muted-foreground">Máximo</p>
+                  <p className="text-lg font-bold">{pesoMax} kg</p>
+                </div>
+                <div className="text-center p-2 bg-muted/50 rounded-lg">
+                  <p className="text-xs text-muted-foreground">Dispersión</p>
+                  <p className="text-lg font-bold">{dispersion} kg</p>
+                </div>
+                <div className="text-center p-2 bg-muted/50 rounded-lg">
+                  <p className="text-xs text-muted-foreground">GDP</p>
+                  <p className={`text-lg font-bold ${gdp !== null && gdp >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {gdp !== null ? `${gdp >= 0 ? '+' : ''}${gdp.toFixed(2)} kg/d` : '-'}
+                  </p>
+                </div>
+              </div>
+
+              {sorted.length >= 2 && (
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis dataKey="fecha" tick={{ fontSize: 11 }} />
+                    <YAxis
+                      domain={[Math.floor(pesoMin * 0.95), Math.ceil(pesoMax * 1.05)]}
+                      tick={{ fontSize: 11 }}
+                      unit=" kg"
+                    />
+                    <Tooltip
+                      formatter={(value, name) => {
+                        if (name === 'peso') return [`${value} kg`, 'Peso Prom.'];
+                        return [value, 'Pesajes'];
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="peso"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2}
+                      dot={{ r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       <Card>
         <CardHeader>

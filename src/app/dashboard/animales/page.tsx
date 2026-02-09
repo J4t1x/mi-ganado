@@ -55,6 +55,18 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
+function downloadCSV(filename: string, headers: string[], rows: string[][]) {
+  const bom = '\uFEFF';
+  const csv = bom + [headers.join(';'), ...rows.map((r) => r.join(';'))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function getStatusBadgeVariant(estado: string) {
   switch (estado) {
     case 'ACTIVO':
@@ -78,6 +90,7 @@ export default function AnimalesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     loadAnimales();
@@ -131,6 +144,39 @@ export default function AnimalesPage() {
     }
   };
 
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const params: { limit: number; estado?: string; search?: string } = { limit: 1000 };
+      if (estadoFilter !== 'todos') params.estado = estadoFilter;
+      if (searchTerm) params.search = searchTerm;
+
+      const response = await animalesService.getAll(params);
+      const headers = ['DIIO', 'RFID', 'Especie', 'Raza', 'Sexo', 'Categoría', 'Estado', 'Establecimiento', 'Lote', 'Último Peso (kg)', 'Fecha Alta'];
+      const rows = response.data.map((a) => [
+        a.identificadores?.find((i) => i.tipo === 'DIIO_VISUAL' && i.activo)?.codigo || '-',
+        a.identificadores?.find((i) => i.tipo === 'RFID' && i.activo)?.codigo || '-',
+        a.especie || '-',
+        a.raza?.nombre || '-',
+        a.sexo || '-',
+        a.categoria || '-',
+        a.estado,
+        a.establecimientoActual?.nombre || '-',
+        a.lote?.nombre || '-',
+        a.pesajes && a.pesajes.length > 0
+          ? [...a.pesajes].sort((x, y) => new Date(y.fechaHora).getTime() - new Date(x.fechaHora).getTime())[0].peso.toString()
+          : '-',
+        new Date(a.fechaAlta).toLocaleDateString('es-CL'),
+      ]);
+      downloadCSV(`animales_${new Date().toISOString().split('T')[0]}.csv`, headers, rows);
+      toast.success(`${response.data.length} animales exportados`);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al exportar');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const getIdentificador = (animal: AnimalWithRelations, tipo: TipoIdentificador) => {
     const id = animal.identificadores?.find(i => i.tipo === tipo && i.activo);
     return id?.codigo || '-';
@@ -162,8 +208,8 @@ export default function AnimalesPage() {
             <Upload className="h-4 w-4 mr-2" />
             Importar
           </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
+            {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
             Exportar
           </Button>
           <Button asChild>

@@ -1,6 +1,6 @@
 # Estado Actual — Mi Ganado
 
-**Última actualización:** 2026-02-09 (Sprint 7 — FINAL)
+**Última actualización:** 2026-02-09 (Sprint 9)
 
 ## Sprints Completados
 
@@ -13,6 +13,8 @@
 | **Sprint 5** | Offline & PWA | ✅ Completado | 2026-02-09 |
 | **Sprint 6** | Módulo Financiero | ✅ Completado | 2026-02-09 |
 | **Sprint 7** | Notificaciones y Alertas | ✅ Completado | 2026-02-09 |
+| **Sprint 8** | Responsive Mobile Dashboard | ✅ Completado | 2026-02-09 |
+| **Sprint 9** | Endpoints Backend | ✅ Completado | 2026-02-09 |
 
 ### Sprint 1 — Detalle
 - SP-01: Movimientos crear conectado a API ✅
@@ -66,6 +68,22 @@
 - SP-37: Página configuración de alertas — switches por categoría + estado notificaciones ✅
 - SP-38: Fix bug Turbopack parse en movimientos (fragment → div) ✅
 
+### Sprint 8 — Detalle
+- SP-39: Menú móvil Sheet lateral (shadcn/ui Sheet, nav completa + Administración) ✅
+- SP-40: Barras de acción responsivas — botones colapsados en móvil (animales, pesajes, sanitario, movimientos) ✅
+- SP-41: Vista card alternativa para tablas en móvil (animales, movimientos, sanitario) ✅
+- SP-42: Filtros adaptados — anchos responsivos (`w-full sm:w-[140px]`) en animales, sanitario, reportes ✅
+- SP-43: Paginación compacta — texto corto + botones con flechas en móvil ✅
+- SP-44: Gráficos optimizados — BarChart labels rotados, PieChart legend bottom, radios ajustados ✅
+
+### Sprint 9 — Detalle (repo: backend-agente)
+- SP-45: Análisis estado backend — Prisma schema, módulos existentes, auth ✅
+- SP-46: Módulo Sanitario BE — modelo `EventoSanitario` + CRUD controller/service + DTOs ✅
+- SP-47: Módulo Financiero BE — modelos `Costo` + `Venta` + CRUD controllers/services + DTOs ✅
+- SP-48: Auth endpoints — `POST /auth/forgot-password` + `POST /auth/change-password` ✅
+- SP-49: Modelo Animal — `padreId`/`madreId` + self-relations genealogía ✅
+- SP-50: Prisma enums — `TipoEventoSanitario`, `EstadoEventoSanitario`, `TipoCosto`, `FormaPago` ✅
+
 ## Módulos del Dashboard
 
 | Módulo | Estado | Páginas | Service API | Componentes |
@@ -96,19 +114,22 @@
 
 ## Dependencias Nuevas
 - `recharts` — Gráficos interactivos (Sprint 2)
+- `shadcn/ui Sheet` — Menú lateral móvil (Sprint 8)
 
 ## Bugs Activos
 
 - Ninguno conocido
 
 ## Pendientes Backend
-- `/auth/forgot-password` — Endpoint para recuperación de contraseña
-- `/auth/change-password` — Endpoint para cambio de contraseña
-- `padreId`/`madreId` en modelo Animal — Para genealogía básica (SP-14)
+- ✅ ~~`/auth/forgot-password`~~ — Implementado (Sprint 9)
+- ✅ ~~`/auth/change-password`~~ — Implementado (Sprint 9)
+- ✅ ~~`padreId`/`madreId` en modelo Animal~~ — Implementado (Sprint 9)
+- Migrar DB en Railway — `prisma migrate deploy` para aplicar nuevos modelos
+- Email service — Integrar envío real de emails para forgot-password
 
 ## Próximas Prioridades
 
-1. **Endpoints backend** — Sanitario, financiero, auth (forgot/change password)
+1. **Migrar DB Railway** — `prisma migrate deploy` para nuevos modelos (sanitario, financiero, genealogía)
 2. **Testing** — Unit tests + E2E con Playwright
 3. **Integración SIPEC/SAG** — Trazabilidad oficial
 4. **Módulo Reproducción** — Servicios, gestación, partos

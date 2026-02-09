@@ -62,6 +62,10 @@ Aunque la infraestructura base y la conexión están listas, se sugiere enfocar 
 2.  **Refinamiento de UI/UX:** Asegurar que todos los formularios manejen correctamente los errores de validación del backend y proporcionen feedback visual claro (toasts, loading states).
 3.  **Reportes:** Verificar que el módulo de reportes consuma correctamente los datos agregados generados por los módulos operativos.
 
+## 4. Documentación Complementaria
+
+- **Implementación de Deploy en Vercel:** ver `docs/implementation/IMPLEMENTACION-VERCEL.md` para conocer el flujo completo de despliegue, manejo de variables y planes de contingencia del frontend.
+
 ## Conclusión
 
 El objetivo de "habilitar todos los módulos y asegurar conexión al backend" se considera **CUMPLIDO** en términos de arquitectura e implementación de código. Ambos proyectos (frontend y backend) están alineados y conectados.

@@ -96,12 +96,12 @@ export default function TitularesPage() {
     try {
       if (editingTitular) {
         // Filtrar el campo 'rut' que no es aceptado en UpdateTitularDto
-        const { rut, ...updateData } = data as any;
+        const { rut: _rut, ...updateData } = data as UpdateTitularDto & { rut?: string };
         await titularesService.update(editingTitular.id, updateData as UpdateTitularDto);
         toast.success('Titular actualizado correctamente');
       } else {
         // Filtrar el campo 'estado' que no es aceptado en CreateTitularDto
-        const { estado, ...createData } = data as any;
+        const { estado: _estado, ...createData } = data as CreateTitularDto & { estado?: string };
         await titularesService.create(createData as CreateTitularDto);
         toast.success('Titular creado correctamente');
       }

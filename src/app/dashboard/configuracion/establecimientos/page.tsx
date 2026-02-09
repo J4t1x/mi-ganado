@@ -119,7 +119,7 @@ export default function EstablecimientosPage() {
         toast.success('Establecimiento actualizado correctamente');
       } else {
         // Filtrar el campo 'estado' que no es aceptado en CreateEstablecimientoDto
-        const { estado, ...createData } = data as any;
+        const { estado: _estado, ...createData } = data as CreateEstablecimientoDto & { estado?: string };
         await establecimientosService.create(createData as CreateEstablecimientoDto);
         toast.success('Establecimiento creado correctamente');
       }

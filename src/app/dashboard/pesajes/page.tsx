@@ -44,10 +44,57 @@ import {
   FileText,
   Loader2,
   RefreshCw,
+  CheckCircle,
+  XCircle,
+  File,
 } from 'lucide-react';
+import { useRef } from 'react';
 import { pesajesService, SesionPesaje } from '@/lib/api/pesajes';
 import { lotesService, LoteWithStats } from '@/lib/api/lotes';
 import { toast } from 'sonner';
+
+interface ParsedRow {
+  codigo: string;
+  peso: number;
+  fechaHora?: string;
+}
+
+function parseXR5000File(content: string): ParsedRow[] {
+  const lines = content.split(/\r?\n/).filter((l) => l.trim());
+  const results: ParsedRow[] = [];
+
+  for (const line of lines) {
+    // Skip header lines
+    if (line.toLowerCase().includes('codigo') || line.toLowerCase().includes('peso') || line.startsWith('#')) {
+      continue;
+    }
+
+    // Try different delimiters: semicolon, comma, tab
+    let parts: string[] = [];
+    if (line.includes(';')) {
+      parts = line.split(';').map((p) => p.trim());
+    } else if (line.includes(',')) {
+      parts = line.split(',').map((p) => p.trim());
+    } else if (line.includes('\t')) {
+      parts = line.split('\t').map((p) => p.trim());
+    } else {
+      // Try space-separated
+      parts = line.split(/\s+/).map((p) => p.trim());
+    }
+
+    if (parts.length >= 2) {
+      const codigo = parts[0];
+      const peso = parseFloat(parts[1].replace(',', '.'));
+      const fechaHora = parts[2] || undefined;
+
+      if (codigo && !isNaN(peso) && peso > 0) {
+        results.push({ codigo, peso, fechaHora });
+      }
+    }
+  }
+
+  return results;
+}
 
 export default function PesajesPage() {
   const searchParams = useSearchParams();
@@ -59,6 +106,14 @@ export default function PesajesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+
+  // XR5000 import state
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [parsedData, setParsedData] = useState<ParsedRow[]>([]);
+  const [importLoteId, setImportLoteId] = useState('');
+  const [importOperador, setImportOperador] = useState('');
+  const [importing, setImporting] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -89,11 +144,68 @@ export default function PesajesPage() {
       ]);
       setSesiones(sesionesRes.data);
       setLotes(lotesRes.data);
-    } catch (error: any) {
-      toast.error(error.message || 'Error al cargar datos');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al cargar datos');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImportFile(file);
+    try {
+      const content = await file.text();
+      const parsed = parseXR5000File(content);
+      setParsedData(parsed);
+      if (parsed.length === 0) {
+        toast.error('No se encontraron datos válidos en el archivo. Formato esperado: CODIGO;PESO o CODIGO,PESO');
+      } else {
+        toast.success(`${parsed.length} registro(s) encontrado(s)`);
+      }
+    } catch {
+      toast.error('Error al leer el archivo');
+    }
+  };
+
+  const handleImport = async () => {
+    if (parsedData.length === 0) {
+      toast.error('No hay datos para importar');
+      return;
+    }
+
+    setImporting(true);
+    try {
+      const result = await pesajesService.importarXR5000(
+        parsedData,
+        importLoteId || undefined,
+        importOperador || undefined
+      );
+      toast.success(
+        `Importación completada: ${result.exitosos} exitosos, ${result.fallidos} fallidos`
+      );
+      if (result.errores && result.errores.length > 0) {
+        result.errores.slice(0, 3).forEach((err) => toast.error(err));
+      }
+      setImportDialogOpen(false);
+      setImportFile(null);
+      setParsedData([]);
+      setImportLoteId('');
+      setImportOperador('');
+      loadData();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al importar datos');
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const resetImport = () => {
+    setImportFile(null);
+    setParsedData([]);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleCreate = async () => {
@@ -120,8 +232,8 @@ export default function PesajesPage() {
         observaciones: '',
       });
       loadData();
-    } catch (error: any) {
-      toast.error(error.message || 'Error al crear sesión');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al crear sesión');
     }
   };
 
@@ -151,36 +263,117 @@ export default function PesajesPage() {
             Actualizar
           </Button>
 
-          <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+          <Dialog open={importDialogOpen} onOpenChange={(open) => {
+            setImportDialogOpen(open);
+            if (!open) resetImport();
+          }}>
             <DialogTrigger asChild>
               <Button variant="outline">
                 <Upload className="h-4 w-4 mr-2" />
                 Importar XR5000
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-lg">
               <DialogHeader>
                 <DialogTitle>Importar desde XR5000</DialogTitle>
                 <DialogDescription>
-                  Sube el archivo CSV exportado desde tu equipo XR5000
+                  Sube el archivo CSV/TXT exportado desde tu equipo XR5000
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
-                <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                  <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Arrastra tu archivo aquí o haz clic para seleccionar
-                  </p>
-                  <Button variant="outline" size="sm">
-                    Seleccionar archivo
-                  </Button>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Formatos soportados: CSV, TXT
-                  </p>
-                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv,.txt"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                />
+
+                {!importFile ? (
+                  <div
+                    className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                    onClick={() => fileInputRef.current?.click()}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const file = e.dataTransfer.files[0];
+                      if (file && fileInputRef.current) {
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        fileInputRef.current.files = dt.files;
+                        fileInputRef.current.dispatchEvent(new Event('change', { bubbles: true }));
+                      }
+                    }}
+                  >
+                    <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Arrastra tu archivo aquí o haz clic para seleccionar
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Formatos: CSV, TXT — Columnas: CODIGO;PESO o CODIGO,PESO
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/50">
+                      <File className="h-8 w-8 text-primary flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{importFile.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(importFile.size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {parsedData.length > 0 ? (
+                          <Badge variant="outline" className="text-green-600 border-green-600">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            {parsedData.length} registros
+                          </Badge>
+                        ) : (
+                          <Badge variant="destructive">
+                            <XCircle className="h-3 w-3 mr-1" />
+                            Sin datos
+                          </Badge>
+                        )}
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={resetImport}>
+                        Cambiar
+                      </Button>
+                    </div>
+
+                    {parsedData.length > 0 && (
+                      <div className="border rounded-md max-h-40 overflow-y-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Código</TableHead>
+                              <TableHead className="text-right">Peso (kg)</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {parsedData.slice(0, 10).map((row, idx) => (
+                              <TableRow key={idx}>
+                                <TableCell className="font-mono text-sm">{row.codigo}</TableCell>
+                                <TableCell className="text-right">{row.peso}</TableCell>
+                              </TableRow>
+                            ))}
+                            {parsedData.length > 10 && (
+                              <TableRow>
+                                <TableCell colSpan={2} className="text-center text-muted-foreground text-sm">
+                                  ... y {parsedData.length - 10} más
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="space-y-2">
-                  <Label htmlFor="lote-import">Asociar a lote</Label>
-                  <Select>
+                  <Label>Asociar a lote (opcional)</Label>
+                  <Select value={importLoteId} onValueChange={setImportLoteId}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecciona un lote" />
                     </SelectTrigger>
@@ -193,13 +386,25 @@ export default function PesajesPage() {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-2">
+                  <Label>Operador (opcional)</Label>
+                  <Input
+                    placeholder="Nombre del operador"
+                    value={importOperador}
+                    onChange={(e) => setImportOperador(e.target.value)}
+                  />
+                </div>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setImportDialogOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={() => setImportDialogOpen(false)}>
-                  Importar
+                <Button
+                  onClick={handleImport}
+                  disabled={parsedData.length === 0 || importing}
+                >
+                  {importing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Importar {parsedData.length > 0 ? `(${parsedData.length})` : ''}
                 </Button>
               </DialogFooter>
             </DialogContent>

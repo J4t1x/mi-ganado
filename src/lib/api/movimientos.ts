@@ -1,4 +1,5 @@
 import { PaginatedResponse } from '@/types';
+import { apiCache } from './cache';
 
 export type TipoMovimiento = 'TRASLADO' | 'VENTA' | 'COMPRA' | 'MUERTE' | 'AJUSTE';
 export type EstadoMovimiento = 'BORRADOR' | 'CONFIRMADO' | 'INFORMADO';
@@ -93,6 +94,13 @@ export const movimientosService = {
         if (params?.fechaHasta) searchParams.set('fechaHasta', params.fechaHasta);
 
         const query = searchParams.toString();
+        const cacheKey = `movimientos:${query}`;
+
+        // Verificar caché
+        const cachedData = apiCache.get<PaginatedResponse<Movimiento>>(cacheKey);
+        if (cachedData) {
+            return cachedData;
+        }
 
         const response = await fetch(
             `${baseUrl}/api/v1/ganado/movimientos${query ? `?${query}` : ''}`,
@@ -114,7 +122,12 @@ export const movimientosService = {
             throw new Error(error.message || 'Error al obtener movimientos');
         }
 
-        return await response.json();
+        const data = await response.json();
+        
+        // Guardar en caché por 5 minutos
+        apiCache.set(cacheKey, data, 5 * 60 * 1000);
+
+        return data;
     },
 
     async getById(id: string): Promise<Movimiento> {
@@ -170,6 +183,10 @@ export const movimientosService = {
             throw new Error(error.message || 'Error al crear movimiento');
         }
 
+        // Invalidar caché de movimientos y animales
+        apiCache.invalidatePattern('movimientos:');
+        apiCache.invalidatePattern('animales:');
+
         return await response.json();
     },
 
@@ -196,6 +213,9 @@ export const movimientosService = {
             }));
             throw new Error(error.message || 'Error al confirmar movimiento');
         }
+
+        // Invalidar caché de movimientos
+        apiCache.invalidatePattern('movimientos:');
 
         return await response.json();
     },
@@ -231,7 +251,7 @@ export const movimientosService = {
     async addDocumento(
         movimientoId: string,
         dto: { tipo: string; folio?: string; fecha?: string; archivoUrl?: string }
-    ): Promise<any> {
+    ): Promise<Record<string, unknown>> {
         const token = getToken();
         if (!token) {
             throw new Error('No autenticado');

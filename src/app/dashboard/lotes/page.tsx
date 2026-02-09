@@ -91,8 +91,8 @@ export default function LotesPage() {
       ]);
       setLotes(lotesRes.data);
       setEstablecimientos(estRes.data);
-    } catch (error: any) {
-      toast.error(error.message || 'Error al cargar datos');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al cargar datos');
     } finally {
       setLoading(false);
     }
@@ -110,8 +110,8 @@ export default function LotesPage() {
       setDialogOpen(false);
       setFormData({ nombre: '', establecimientoId: '', descripcion: '' });
       loadData();
-    } catch (error: any) {
-      toast.error(error.message || 'Error al crear lote');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al crear lote');
     }
   };
 
@@ -122,8 +122,8 @@ export default function LotesPage() {
       await lotesService.delete(loteToDelete);
       toast.success('Lote eliminado exitosamente');
       loadData();
-    } catch (error: any) {
-      toast.error(error.message || 'Error al eliminar lote');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al eliminar lote');
     } finally {
       setDeleteDialogOpen(false);
       setLoteToDelete(null);

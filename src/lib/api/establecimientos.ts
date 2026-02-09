@@ -5,6 +5,7 @@ import {
   UpdateEstablecimientoDto,
   PaginatedResponse,
 } from '@/types';
+import { apiCache } from './cache';
 
 function getApiConfig() {
   return {
@@ -27,6 +28,14 @@ export const establecimientosService = {
 
     const { baseUrl, apiKey } = getApiConfig();
     const queryString = params ? new URLSearchParams(params).toString() : '';
+    const cacheKey = `establecimientos:${queryString}`;
+
+    // Verificar caché
+    const cachedData = apiCache.get<PaginatedResponse<EstablecimientoWithRelations>>(cacheKey);
+    if (cachedData) {
+      return cachedData;
+    }
+
     const url = `${baseUrl}/api/v1/ganado/establecimientos${queryString ? `?${queryString}` : ''}`;
 
     const response = await fetch(url, {
@@ -43,7 +52,12 @@ export const establecimientosService = {
       throw new Error(error.message || 'Error al obtener establecimientos');
     }
 
-    return await response.json();
+    const data = await response.json();
+    
+    // Guardar en caché por 5 minutos
+    apiCache.set(cacheKey, data, 5 * 60 * 1000);
+
+    return data;
   },
 
   async getById(id: string): Promise<EstablecimientoWithRelations> {
@@ -96,6 +110,9 @@ export const establecimientosService = {
       throw new Error(error.message || 'Error al crear establecimiento');
     }
 
+    // Invalidar caché de establecimientos
+    apiCache.invalidatePattern('establecimientos:');
+
     return await response.json();
   },
 
@@ -124,6 +141,9 @@ export const establecimientosService = {
       throw new Error(error.message || 'Error al actualizar establecimiento');
     }
 
+    // Invalidar caché de establecimientos
+    apiCache.invalidatePattern('establecimientos:');
+
     return await response.json();
   },
 
@@ -149,6 +169,9 @@ export const establecimientosService = {
       }));
       throw new Error(error.message || 'Error al eliminar establecimiento');
     }
+
+    // Invalidar caché de establecimientos
+    apiCache.invalidatePattern('establecimientos:');
   },
 
   async toggleEstado(id: string): Promise<Establecimiento> {
@@ -173,6 +196,9 @@ export const establecimientosService = {
       }));
       throw new Error(error.message || 'Error al cambiar estado');
     }
+
+    // Invalidar caché de establecimientos
+    apiCache.invalidatePattern('establecimientos:');
 
     return await response.json();
   },

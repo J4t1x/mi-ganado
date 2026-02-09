@@ -86,7 +86,7 @@ export default function AnimalesPage() {
   const loadAnimales = async () => {
     setLoading(true);
     try {
-      const params: any = {
+      const params: { page: number; limit: number; estado?: string; search?: string } = {
         page: currentPage,
         limit: 10,
       };
@@ -103,8 +103,8 @@ export default function AnimalesPage() {
       setAnimales(response.data);
       setTotal(response.meta.total);
       setTotalPages(response.meta.totalPages);
-    } catch (error: any) {
-      toast.error(error.message || 'Error al cargar animales');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al cargar animales');
       setAnimales([]);
     } finally {
       setLoading(false);
@@ -123,8 +123,8 @@ export default function AnimalesPage() {
       await animalesService.delete(animalToDelete);
       toast.success('Animal eliminado exitosamente');
       loadAnimales();
-    } catch (error: any) {
-      toast.error(error.message || 'Error al eliminar animal');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al eliminar animal');
     } finally {
       setDeleteDialogOpen(false);
       setAnimalToDelete(null);

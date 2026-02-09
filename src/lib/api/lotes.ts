@@ -3,7 +3,9 @@ import {
     CreateLoteDto,
     UpdateLoteDto,
     PaginatedResponse,
+    AnimalWithRelations,
 } from '@/types';
+import { apiCache } from './cache';
 
 export interface LotesQueryParams {
     page?: number;
@@ -60,6 +62,13 @@ export const lotesService = {
         if (params?.establecimientoId) searchParams.set('establecimientoId', params.establecimientoId);
 
         const query = searchParams.toString();
+        const cacheKey = `lotes:${query}`;
+
+        // Verificar caché
+        const cachedData = apiCache.get<PaginatedResponse<LoteWithStats>>(cacheKey);
+        if (cachedData) {
+            return cachedData;
+        }
 
         const response = await fetch(
             `${baseUrl}/api/v1/ganado/lotes${query ? `?${query}` : ''}`,
@@ -81,7 +90,12 @@ export const lotesService = {
             throw new Error(error.message || 'Error al obtener lotes');
         }
 
-        return await response.json();
+        const data = await response.json();
+        
+        // Guardar en caché por 5 minutos
+        apiCache.set(cacheKey, data, 5 * 60 * 1000);
+
+        return data;
     },
 
     async getById(id: string): Promise<LoteWithStats> {
@@ -137,6 +151,9 @@ export const lotesService = {
             throw new Error(error.message || 'Error al crear lote');
         }
 
+        // Invalidar caché de lotes
+        apiCache.invalidatePattern('lotes:');
+
         return await response.json();
     },
 
@@ -165,6 +182,9 @@ export const lotesService = {
             throw new Error(error.message || 'Error al actualizar lote');
         }
 
+        // Invalidar caché de lotes
+        apiCache.invalidatePattern('lotes:');
+
         return await response.json();
     },
 
@@ -191,6 +211,9 @@ export const lotesService = {
             }));
             throw new Error(error.message || 'Error al eliminar lote');
         }
+
+        // Invalidar caché de lotes
+        apiCache.invalidatePattern('lotes:');
     },
 
     async addAnimales(loteId: string, animalIds: string[]): Promise<LoteWithStats> {
@@ -218,10 +241,14 @@ export const lotesService = {
             throw new Error(error.message || 'Error al agregar animales');
         }
 
+        // Invalidar caché de lotes y animales
+        apiCache.invalidatePattern('lotes:');
+        apiCache.invalidatePattern('animales:');
+
         return await response.json();
     },
 
-    async getAnimales(loteId: string): Promise<any[]> {
+    async getAnimales(loteId: string): Promise<AnimalWithRelations[]> {
         const token = getToken();
         if (!token) {
             throw new Error('No autenticado');
@@ -273,6 +300,10 @@ export const lotesService = {
             }));
             throw new Error(error.message || 'Error al remover animales del lote');
         }
+
+        // Invalidar caché de lotes y animales
+        apiCache.invalidatePattern('lotes:');
+        apiCache.invalidatePattern('animales:');
 
         return await response.json();
     },

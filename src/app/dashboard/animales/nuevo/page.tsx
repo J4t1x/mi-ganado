@@ -20,8 +20,8 @@ export default function NuevoAnimalPage() {
       await animalesService.create(data);
       toast.success('Animal creado exitosamente');
       router.push('/dashboard/animales');
-    } catch (error: any) {
-      toast.error(error.message || 'Error al crear animal');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al crear animal');
     } finally {
       setIsLoading(false);
     }

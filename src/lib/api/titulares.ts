@@ -5,6 +5,7 @@ import {
   UpdateTitularDto,
   PaginatedResponse,
 } from '@/types';
+import { apiCache } from './cache';
 
 export interface TitularesQueryParams {
   page?: number;
@@ -42,6 +43,13 @@ export const titularesService = {
     if (params?.tipo) searchParams.set('tipo', params.tipo);
 
     const query = searchParams.toString();
+    const cacheKey = `titulares:${query}`;
+
+    // Verificar caché
+    const cachedData = apiCache.get<PaginatedResponse<TitularWithEstablecimientos>>(cacheKey);
+    if (cachedData) {
+      return cachedData;
+    }
 
     const response = await fetch(
       `${baseUrl}/api/v1/ganado/titulares${query ? `?${query}` : ''}`,
@@ -63,7 +71,12 @@ export const titularesService = {
       throw new Error(error.message || 'Error al obtener titulares');
     }
 
-    return await response.json();
+    const data = await response.json();
+    
+    // Guardar en caché por 5 minutos
+    apiCache.set(cacheKey, data, 5 * 60 * 1000);
+
+    return data;
   },
 
   async getById(id: string): Promise<TitularWithEstablecimientos> {
@@ -119,6 +132,9 @@ export const titularesService = {
       throw new Error(error.message || 'Error al crear titular');
     }
 
+    // Invalidar caché de titulares
+    apiCache.invalidatePattern('titulares:');
+
     return await response.json();
   },
 
@@ -147,6 +163,9 @@ export const titularesService = {
       throw new Error(error.message || 'Error al actualizar titular');
     }
 
+    // Invalidar caché de titulares
+    apiCache.invalidatePattern('titulares:');
+
     return await response.json();
   },
 
@@ -173,6 +192,9 @@ export const titularesService = {
       }));
       throw new Error(error.message || 'Error al eliminar titular');
     }
+
+    // Invalidar caché de titulares
+    apiCache.invalidatePattern('titulares:');
   },
 
   async toggleEstado(id: string): Promise<Titular> {
@@ -201,6 +223,9 @@ export const titularesService = {
       }));
       throw new Error(error.message || 'Error al cambiar estado');
     }
+
+    // Invalidar caché de titulares
+    apiCache.invalidatePattern('titulares:');
 
     return await response.json();
   },

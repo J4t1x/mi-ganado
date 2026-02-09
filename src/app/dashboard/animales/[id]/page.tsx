@@ -13,7 +13,6 @@ import {
   ArrowLeft,
   Edit,
   Loader2,
-  Calendar,
   MapPin,
   Tag,
   Scale,
@@ -35,8 +34,8 @@ export default function AnimalDetailPage() {
     try {
       const data = await animalesService.getById(params.id as string);
       setAnimal(data);
-    } catch (error: any) {
-      toast.error(error.message || 'Error al cargar animal');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al cargar animal');
       router.push('/dashboard/animales');
     } finally {
       setLoading(false);

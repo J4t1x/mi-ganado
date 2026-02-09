@@ -15,13 +15,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import {
   CreateAnimalDto,
   Especie,
   Sexo,
   TipoIdentificador,
   Animal,
+  TitularWithEstablecimientos,
+  EstablecimientoWithRelations,
+  Raza,
 } from '@/types';
 import { titularesService } from '@/lib/api/titulares';
 import { establecimientosService } from '@/lib/api/establecimientos';
@@ -38,11 +40,11 @@ const animalSchema = z.object({
   loteId: z.string().optional(),
 });
 
-const identificadorSchema = z.object({
-  tipo: z.nativeEnum(TipoIdentificador),
-  codigo: z.string().min(1, 'El código es requerido'),
-  fechaAsignacion: z.string().optional(),
-});
+interface IdentificadorFormItem {
+  tipo: TipoIdentificador;
+  codigo: string;
+  fechaAsignacion: string;
+}
 
 interface AnimalFormProps {
   animal?: Animal;
@@ -52,10 +54,10 @@ interface AnimalFormProps {
 }
 
 export function AnimalForm({ animal, onSubmit, onCancel, isLoading }: AnimalFormProps) {
-  const [titulares, setTitulares] = useState<any[]>([]);
-  const [establecimientos, setEstablecimientos] = useState<any[]>([]);
-  const [razas, setRazas] = useState<any[]>([]);
-  const [identificadores, setIdentificadores] = useState<any[]>([]);
+  const [titulares, setTitulares] = useState<TitularWithEstablecimientos[]>([]);
+  const [establecimientos, setEstablecimientos] = useState<EstablecimientoWithRelations[]>([]);
+  const [razas, setRazas] = useState<Raza[]>([]);
+  const [identificadores, setIdentificadores] = useState<IdentificadorFormItem[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [loadingRazas, setLoadingRazas] = useState(false);
 
@@ -93,7 +95,7 @@ export function AnimalForm({ animal, onSubmit, onCancel, isLoading }: AnimalForm
       // Limpiar la raza seleccionada cuando cambia la especie
       setValue('razaId', undefined);
     }
-  }, [selectedEspecie]);
+  }, [selectedEspecie, setValue]);
 
   const loadInitialData = async () => {
     try {
@@ -139,7 +141,7 @@ export function AnimalForm({ animal, onSubmit, onCancel, isLoading }: AnimalForm
     setIdentificadores(identificadores.filter((_, i) => i !== index));
   };
 
-  const updateIdentificador = (index: number, field: string, value: any) => {
+  const updateIdentificador = (index: number, field: string, value: string) => {
     const updated = [...identificadores];
     updated[index] = { ...updated[index], [field]: value };
     setIdentificadores(updated);
@@ -343,7 +345,7 @@ export function AnimalForm({ animal, onSubmit, onCancel, isLoading }: AnimalForm
           <CardContent className="space-y-4">
             {identificadores.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No hay identificadores agregados. Haz clic en "Agregar" para añadir uno.
+                No hay identificadores agregados. Haz clic en &quot;Agregar&quot; para añadir uno.
               </p>
             ) : (
               identificadores.map((id, index) => (

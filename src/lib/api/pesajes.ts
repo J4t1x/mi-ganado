@@ -1,4 +1,5 @@
 import { PaginatedResponse } from '@/types';
+import { apiCache } from './cache';
 
 export interface SesionPesaje {
     id: string;
@@ -88,6 +89,13 @@ export const pesajesService = {
         if (params?.fechaHasta) searchParams.set('fechaHasta', params.fechaHasta);
 
         const query = searchParams.toString();
+        const cacheKey = `pesajes:${query}`;
+
+        // Verificar caché
+        const cachedData = apiCache.get<PaginatedResponse<SesionPesaje>>(cacheKey);
+        if (cachedData) {
+            return cachedData;
+        }
 
         const response = await fetch(
             `${baseUrl}/api/v1/ganado/sesiones-pesaje${query ? `?${query}` : ''}`,
@@ -109,10 +117,15 @@ export const pesajesService = {
             throw new Error(error.message || 'Error al obtener sesiones de pesaje');
         }
 
-        return await response.json();
+        const data = await response.json();
+        
+        // Guardar en caché por 5 minutos
+        apiCache.set(cacheKey, data, 5 * 60 * 1000);
+
+        return data;
     },
 
-    async getSesionById(id: string): Promise<SesionPesaje & { pesajes: Pesaje[]; estadisticas: any }> {
+    async getSesionById(id: string): Promise<SesionPesaje & { pesajes: Pesaje[]; estadisticas: Record<string, unknown> }> {
         const token = getToken();
         if (!token) {
             throw new Error('No autenticado');
@@ -165,6 +178,9 @@ export const pesajesService = {
             throw new Error(error.message || 'Error al crear sesión');
         }
 
+        // Invalidar caché de pesajes
+        apiCache.invalidatePattern('pesajes:');
+
         return await response.json();
     },
 
@@ -192,6 +208,9 @@ export const pesajesService = {
             }));
             throw new Error(error.message || 'Error al agregar pesaje');
         }
+
+        // Invalidar caché de pesajes
+        apiCache.invalidatePattern('pesajes:');
 
         return await response.json();
     },
@@ -225,6 +244,9 @@ export const pesajesService = {
             throw new Error(error.message || 'Error al importar datos');
         }
 
+        // Invalidar caché de pesajes
+        apiCache.invalidatePattern('pesajes:');
+
         return await response.json();
     },
 
@@ -251,5 +273,8 @@ export const pesajesService = {
             }));
             throw new Error(error.message || 'Error al eliminar pesaje');
         }
+
+        // Invalidar caché de pesajes
+        apiCache.invalidatePattern('pesajes:');
     },
 };

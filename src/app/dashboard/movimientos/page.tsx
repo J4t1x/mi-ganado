@@ -52,8 +52,11 @@ import {
   Loader2,
   RefreshCw,
 } from 'lucide-react';
-import { movimientosService, Movimiento, TipoMovimiento, MovimientosEstadisticas } from '@/lib/api/movimientos';
+import { Checkbox } from '@/components/ui/checkbox';
+import { movimientosService, Movimiento, TipoMovimiento, MovimientosEstadisticas, MovimientosQueryParams } from '@/lib/api/movimientos';
 import { establecimientosService } from '@/lib/api/establecimientos';
+import { animalesService, AnimalesQueryParams } from '@/lib/api/animales';
+import { AnimalWithRelations } from '@/types';
 import { toast } from 'sonner';
 
 interface Establecimiento {
@@ -112,6 +115,14 @@ export default function MovimientosPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [tipoFilter, setTipoFilter] = useState<string>('todos');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+
+  // Animal selector state
+  const [selectedAnimalIds, setSelectedAnimalIds] = useState<string[]>([]);
+  const [animalSelectorOpen, setAnimalSelectorOpen] = useState(false);
+  const [availableAnimals, setAvailableAnimals] = useState<AnimalWithRelations[]>([]);
+  const [animalsLoading, setAnimalsLoading] = useState(false);
+  const [animalSearch, setAnimalSearch] = useState('');
 
   // Form state
   const [formData, setFormData] = useState({
@@ -128,9 +139,9 @@ export default function MovimientosPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const params: any = {};
+      const params: MovimientosQueryParams = {};
       if (tipoFilter !== 'todos') {
-        params.tipo = tipoFilter;
+        params.tipo = tipoFilter as TipoMovimiento;
       }
 
       const [movRes, estRes, statsRes] = await Promise.all([
@@ -142,10 +153,104 @@ export default function MovimientosPage() {
       setMovimientos(movRes.data);
       setEstablecimientos(estRes.data);
       setEstadisticas(statsRes);
-    } catch (error: any) {
-      toast.error(error.message || 'Error al cargar datos');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al cargar datos');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadAnimalesByEstablecimiento = async (establecimientoId: string) => {
+    if (!establecimientoId) return;
+    setAnimalsLoading(true);
+    try {
+      const res = await animalesService.getAll({ establecimientoId, limit: 200 });
+      setAvailableAnimals(res.data);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al cargar animales');
+    } finally {
+      setAnimalsLoading(false);
+    }
+  };
+
+  const handleOpenAnimalSelector = () => {
+    if (!formData.establecimientoOrigenId) {
+      toast.error('Selecciona un establecimiento de origen primero');
+      return;
+    }
+    loadAnimalesByEstablecimiento(formData.establecimientoOrigenId);
+    setAnimalSelectorOpen(true);
+  };
+
+  const toggleAnimal = (animalId: string) => {
+    setSelectedAnimalIds((prev) =>
+      prev.includes(animalId)
+        ? prev.filter((id) => id !== animalId)
+        : [...prev, animalId]
+    );
+  };
+
+  const toggleAllAnimals = () => {
+    const filtered = filteredAnimals;
+    const allSelected = filtered.every((a) => selectedAnimalIds.includes(a.id));
+    if (allSelected) {
+      setSelectedAnimalIds((prev) => prev.filter((id) => !filtered.some((a) => a.id === id)));
+    } else {
+      setSelectedAnimalIds((prev) => [
+        ...prev,
+        ...filtered.filter((a) => !prev.includes(a.id)).map((a) => a.id),
+      ]);
+    }
+  };
+
+  const filteredAnimals = availableAnimals.filter((animal) => {
+    if (!animalSearch) return true;
+    const search = animalSearch.toLowerCase();
+    const diio = animal.identificadores?.find((i) => i.tipo === 'DIIO_VISUAL')?.codigo || '';
+    return (
+      diio.toLowerCase().includes(search) ||
+      animal.categoria?.toLowerCase().includes(search) ||
+      animal.raza?.nombre?.toLowerCase().includes(search)
+    );
+  });
+
+  const handleCreateMovimiento = async () => {
+    if (!formData.tipo) {
+      toast.error('Selecciona el tipo de movimiento');
+      return;
+    }
+    if (!formData.fecha) {
+      toast.error('La fecha es requerida');
+      return;
+    }
+    if (selectedAnimalIds.length === 0) {
+      toast.error('Selecciona al menos un animal');
+      return;
+    }
+
+    setCreating(true);
+    try {
+      await movimientosService.create({
+        tipo: formData.tipo as TipoMovimiento,
+        fecha: formData.fecha,
+        establecimientoOrigenId: formData.establecimientoOrigenId || undefined,
+        establecimientoDestinoId: formData.establecimientoDestinoId || undefined,
+        animalIds: selectedAnimalIds,
+      });
+      toast.success('Movimiento creado exitosamente como borrador');
+      setDialogOpen(false);
+      setFormData({
+        tipo: '' as TipoMovimiento | '',
+        fecha: new Date().toISOString().split('T')[0],
+        establecimientoOrigenId: '',
+        establecimientoDestinoId: '',
+      });
+      setSelectedAnimalIds([]);
+      loadData();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al crear movimiento');
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -154,8 +259,8 @@ export default function MovimientosPage() {
       await movimientosService.confirmar(id);
       toast.success('Movimiento confirmado exitosamente');
       loadData();
-    } catch (error: any) {
-      toast.error(error.message || 'Error al confirmar movimiento');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al confirmar movimiento');
     }
   };
 
@@ -259,18 +364,96 @@ export default function MovimientosPage() {
                 </div>
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm text-muted-foreground mb-2">
-                    Animales seleccionados: <span className="font-medium text-foreground">0</span>
+                    Animales seleccionados: <span className="font-medium text-foreground">{selectedAnimalIds.length}</span>
                   </p>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button variant="outline" size="sm" className="w-full" onClick={handleOpenAnimalSelector}>
                     Seleccionar animales
                   </Button>
                 </div>
+
+                <Dialog open={animalSelectorOpen} onOpenChange={setAnimalSelectorOpen}>
+                  <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+                    <DialogHeader>
+                      <DialogTitle>Seleccionar Animales</DialogTitle>
+                      <DialogDescription>
+                        Selecciona los animales para este movimiento
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-3 flex-1 overflow-hidden flex flex-col">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Buscar por DIIO, categoría o raza..."
+                          value={animalSearch}
+                          onChange={(e) => setAnimalSearch(e.target.value)}
+                          className="pl-9"
+                        />
+                      </div>
+                      <div className="overflow-y-auto flex-1 border rounded-md">
+                        {animalsLoading ? (
+                          <div className="flex items-center justify-center py-8">
+                            <Loader2 className="h-6 w-6 animate-spin" />
+                          </div>
+                        ) : filteredAnimals.length === 0 ? (
+                          <div className="text-center py-8 text-muted-foreground text-sm">
+                            No se encontraron animales en este establecimiento
+                          </div>
+                        ) : (
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="w-10">
+                                  <Checkbox
+                                    checked={filteredAnimals.length > 0 && filteredAnimals.every((a) => selectedAnimalIds.includes(a.id))}
+                                    onCheckedChange={toggleAllAnimals}
+                                  />
+                                </TableHead>
+                                <TableHead>DIIO</TableHead>
+                                <TableHead>Categoría</TableHead>
+                                <TableHead>Raza</TableHead>
+                                <TableHead>Sexo</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {filteredAnimals.map((animal) => {
+                                const diio = animal.identificadores?.find((i) => i.tipo === 'DIIO_VISUAL')?.codigo || '-';
+                                return (
+                                  <TableRow key={animal.id} className="cursor-pointer" onClick={() => toggleAnimal(animal.id)}>
+                                    <TableCell>
+                                      <Checkbox
+                                        checked={selectedAnimalIds.includes(animal.id)}
+                                        onCheckedChange={() => toggleAnimal(animal.id)}
+                                      />
+                                    </TableCell>
+                                    <TableCell className="font-mono text-sm">{diio}</TableCell>
+                                    <TableCell>{animal.categoria || '-'}</TableCell>
+                                    <TableCell>{animal.raza?.nombre || '-'}</TableCell>
+                                    <TableCell>{animal.sexo || '-'}</TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedAnimalIds.length} animal(es) seleccionado(s) de {filteredAnimals.length} disponible(s)
+                      </p>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setAnimalSelectorOpen(false)}>
+                        Cerrar
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={() => setDialogOpen(false)}>
+                <Button onClick={handleCreateMovimiento} disabled={creating}>
+                  {creating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   Crear Borrador
                 </Button>
               </DialogFooter>
@@ -356,7 +539,7 @@ export default function MovimientosPage() {
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <Icon className="h-4 w-4 text-muted-foreground" />
-                              <Badge variant={getMovementBadgeVariant(mov.tipo) as any}>
+                              <Badge variant={getMovementBadgeVariant(mov.tipo) as "default" | "secondary" | "outline" | "destructive"}>
                                 {mov.tipo}
                               </Badge>
                             </div>
@@ -370,7 +553,7 @@ export default function MovimientosPage() {
                           <TableCell>{mov.establecimientoOrigen?.nombre || '-'}</TableCell>
                           <TableCell>{mov.establecimientoDestino?.nombre || '-'}</TableCell>
                           <TableCell>
-                            <Badge variant={getStatusBadgeVariant(mov.estado) as any}>
+                            <Badge variant={getStatusBadgeVariant(mov.estado) as "default" | "secondary" | "outline" | "destructive"}>
                               {mov.estado}
                             </Badge>
                           </TableCell>

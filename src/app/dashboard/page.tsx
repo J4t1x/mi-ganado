@@ -89,8 +89,8 @@ export default function DashboardPage() {
       if (isRefresh) {
         toast.success('Dashboard actualizado');
       }
-    } catch (err: any) {
-      const errorMessage = err.message || 'Error al cargar datos del dashboard';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al cargar datos del dashboard';
       setError(errorMessage);
       if (!isRefresh) {
         toast.error(errorMessage);

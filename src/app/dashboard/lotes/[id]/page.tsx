@@ -37,7 +37,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   ArrowLeft,
-  Edit,
   Loader2,
   Beef,
   Scale,
@@ -46,7 +45,6 @@ import {
   Plus,
   Trash2,
   Search,
-  Calendar,
   RefreshCw,
 } from 'lucide-react';
 import { lotesService, LoteWithStats } from '@/lib/api/lotes';
@@ -98,8 +96,8 @@ export default function LoteDetailPage() {
       ]);
       setLote(loteData);
       setAnimales(animalesData);
-    } catch (error: any) {
-      toast.error(error.message || 'Error al cargar datos del lote');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al cargar datos del lote');
       router.push('/dashboard/lotes');
     } finally {
       setLoading(false);
@@ -119,8 +117,8 @@ export default function LoteDetailPage() {
         (animal) => !animal.loteId || animal.loteId === lote.id
       );
       setAvailableAnimals(available);
-    } catch (error: any) {
-      toast.error(error.message || 'Error al cargar animales disponibles');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al cargar animales disponibles');
     }
   };
 
@@ -143,8 +141,8 @@ export default function LoteDetailPage() {
       setAddAnimalsDialogOpen(false);
       setSelectedAnimalIds([]);
       loadData();
-    } catch (error: any) {
-      toast.error(error.message || 'Error al agregar animales');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al agregar animales');
     } finally {
       setLoadingAction(false);
     }
@@ -160,8 +158,8 @@ export default function LoteDetailPage() {
       setRemoveDialogOpen(false);
       setAnimalToRemove(null);
       loadData();
-    } catch (error: any) {
-      toast.error(error.message || 'Error al remover animal');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al remover animal');
     } finally {
       setLoadingAction(false);
     }

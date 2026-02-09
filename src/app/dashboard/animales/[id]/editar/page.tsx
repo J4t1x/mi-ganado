@@ -25,8 +25,8 @@ export default function EditarAnimalPage() {
     try {
       const data = await animalesService.getById(params.id as string);
       setAnimal(data);
-    } catch (error: any) {
-      toast.error(error.message || 'Error al cargar animal');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al cargar animal');
       router.push('/dashboard/animales');
     } finally {
       setLoading(false);
@@ -39,8 +39,8 @@ export default function EditarAnimalPage() {
       await animalesService.update(params.id as string, data);
       toast.success('Animal actualizado exitosamente');
       router.push(`/dashboard/animales/${params.id}`);
-    } catch (error: any) {
-      toast.error(error.message || 'Error al actualizar animal');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al actualizar animal');
     } finally {
       setIsSubmitting(false);
     }

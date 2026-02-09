@@ -7,6 +7,7 @@ import {
   Identificador,
   CreateIdentificadorDto,
 } from '@/types';
+import { apiCache } from './cache';
 
 export interface AnimalesQueryParams {
   page?: number;
@@ -48,6 +49,13 @@ export const animalesService = {
     if (params?.loteId) searchParams.set('loteId', params.loteId);
 
     const query = searchParams.toString();
+    const cacheKey = `animales:${query}`;
+
+    // Verificar caché
+    const cachedData = apiCache.get<PaginatedResponse<AnimalWithRelations>>(cacheKey);
+    if (cachedData) {
+      return cachedData;
+    }
 
     const response = await fetch(
       `${baseUrl}/api/v1/ganado/animales${query ? `?${query}` : ''}`,
@@ -69,7 +77,12 @@ export const animalesService = {
       throw new Error(error.message || 'Error al obtener animales');
     }
 
-    return await response.json();
+    const data = await response.json();
+    
+    // Guardar en caché por 5 minutos
+    apiCache.set(cacheKey, data, 5 * 60 * 1000);
+
+    return data;
   },
 
   async getById(id: string): Promise<AnimalWithRelations> {
@@ -125,6 +138,9 @@ export const animalesService = {
       throw new Error(error.message || 'Error al crear animal');
     }
 
+    // Invalidar caché de animales
+    apiCache.invalidatePattern('animales:');
+
     return await response.json();
   },
 
@@ -153,6 +169,9 @@ export const animalesService = {
       throw new Error(error.message || 'Error al actualizar animal');
     }
 
+    // Invalidar caché de animales
+    apiCache.invalidatePattern('animales:');
+
     return await response.json();
   },
 
@@ -179,9 +198,12 @@ export const animalesService = {
       }));
       throw new Error(error.message || 'Error al eliminar animal');
     }
+
+    // Invalidar caché de animales
+    apiCache.invalidatePattern('animales:');
   },
 
-  async getHistorial(id: string): Promise<any> {
+  async getHistorial(id: string): Promise<Record<string, unknown>> {
     const token = getToken();
     if (!token) {
       throw new Error('No autenticado');

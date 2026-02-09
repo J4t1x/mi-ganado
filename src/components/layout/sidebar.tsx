@@ -13,6 +13,7 @@ import {
   Home,
   Building2,
   Users,
+  Dna,
 } from 'lucide-react';
 
 const navigation = [
@@ -27,6 +28,7 @@ const navigation = [
 const secondaryNavigation = [
   { name: 'Establecimientos', href: '/dashboard/configuracion/establecimientos', icon: Building2 },
   { name: 'Titulares', href: '/dashboard/configuracion/titulares', icon: Users },
+  { name: 'Razas', href: '/dashboard/configuracion/razas', icon: Dna },
   { name: 'Configuración', href: '/dashboard/configuracion', icon: Settings },
 ];
 

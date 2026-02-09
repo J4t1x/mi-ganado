@@ -200,22 +200,49 @@ export default function AnimalesPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={loadAnimales}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Actualizar
-          </Button>
-          <Button variant="outline" size="sm">
-            <Upload className="h-4 w-4 mr-2" />
-            Importar
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
-            {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
-            Exportar
-          </Button>
-          <Button asChild>
+          {/* Secondary actions: visible on sm+, collapsed to dropdown on mobile */}
+          <div className="hidden sm:flex gap-2">
+            <Button variant="outline" size="sm" onClick={loadAnimales}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Actualizar
+            </Button>
+            <Button variant="outline" size="sm">
+              <Upload className="h-4 w-4 mr-2" />
+              Importar
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
+              {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+              Exportar
+            </Button>
+          </div>
+          <div className="sm:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={loadAnimales}>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Actualizar
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Importar
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExport} disabled={exporting}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Exportar
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <Button asChild size="sm">
             <Link href="/dashboard/animales/nuevo">
               <Plus className="h-4 w-4 mr-2" />
-              Nuevo Animal
+              <span className="hidden sm:inline">Nuevo Animal</span>
+              <span className="sm:hidden">Nuevo</span>
             </Link>
           </Button>
         </div>
@@ -236,7 +263,7 @@ export default function AnimalesPage() {
             </div>
             <div className="flex gap-2">
               <Select value={estadoFilter} onValueChange={setEstadoFilter}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-full sm:w-[140px]">
                   <Filter className="h-4 w-4 mr-2" />
                   <SelectValue placeholder="Estado" />
                 </SelectTrigger>
@@ -260,7 +287,44 @@ export default function AnimalesPage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              {/* Mobile card view */}
+              <div className="md:hidden space-y-3">
+                {animales.length === 0 ? (
+                  <p className="text-center py-8 text-muted-foreground">No se encontraron animales</p>
+                ) : (
+                  animales.map((animal) => (
+                    <Link
+                      key={animal.id}
+                      href={`/dashboard/animales/${animal.id}`}
+                      className="block border rounded-lg p-3 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-mono font-medium text-sm">
+                          {getIdentificador(animal, TipoIdentificador.DIIO_VISUAL)}
+                        </span>
+                        <Badge variant={getStatusBadgeVariant(animal.estado)} className="text-xs">
+                          {animal.estado}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                        <div className="text-muted-foreground">Sexo</div>
+                        <div className="text-right">{animal.sexo || '-'}</div>
+                        <div className="text-muted-foreground">Establecimiento</div>
+                        <div className="text-right truncate">{animal.establecimientoActual?.nombre || '-'}</div>
+                        <div className="text-muted-foreground">Lote</div>
+                        <div className="text-right truncate">{animal.lote?.nombre || 'Sin lote'}</div>
+                        <div className="text-muted-foreground">Último Peso</div>
+                        <div className="text-right font-medium">
+                          {getUltimoPeso(animal) ? `${getUltimoPeso(animal)} kg` : '-'}
+                        </div>
+                      </div>
+                    </Link>
+                  ))
+                )}
+              </div>
+
+              {/* Desktop table view */}
+              <div className="hidden md:block overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -350,31 +414,32 @@ export default function AnimalesPage() {
                 </Table>
               </div>
 
-              <div className="flex items-center justify-between mt-4">
-                <p className="text-sm text-muted-foreground">
-                  Mostrando {animales.length} de {total} animales
+              <div className="flex items-center justify-between mt-4 gap-2">
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  <span className="hidden sm:inline">Mostrando {animales.length} de {total} animales</span>
+                  <span className="sm:hidden">{animales.length}/{total}</span>
                 </p>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
                   >
-                    Anterior
+                    <span className="hidden sm:inline">Anterior</span>
+                    <span className="sm:hidden">&lt;</span>
                   </Button>
-                  <div className="flex items-center gap-2 px-3">
-                    <span className="text-sm">
-                      Página {currentPage} de {totalPages}
-                    </span>
-                  </div>
+                  <span className="text-xs sm:text-sm whitespace-nowrap">
+                    {currentPage}/{totalPages}
+                  </span>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
                   >
-                    Siguiente
+                    <span className="hidden sm:inline">Siguiente</span>
+                    <span className="sm:hidden">&gt;</span>
                   </Button>
                 </div>
               </div>

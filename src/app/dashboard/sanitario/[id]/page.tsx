@@ -46,13 +46,14 @@ const TIPOS = [
   { value: 'VACUNACION', label: 'Vacunación', icon: Syringe },
   { value: 'TRATAMIENTO', label: 'Tratamiento', icon: Pill },
   { value: 'DESPARASITACION', label: 'Desparasitación', icon: Bug },
-  { value: 'DIAGNOSTICO', label: 'Diagnóstico', icon: Stethoscope },
+  { value: 'EXAMEN', label: 'Examen', icon: Stethoscope },
+  { value: 'CIRUGIA', label: 'Cirugía', icon: Stethoscope },
   { value: 'OTRO', label: 'Otro', icon: Calendar },
 ] as const;
 
 const ESTADOS = [
   { value: 'PROGRAMADO', label: 'Programado', variant: 'outline' as const },
-  { value: 'APLICADO', label: 'Aplicado', variant: 'default' as const },
+  { value: 'REALIZADO', label: 'Realizado', variant: 'default' as const },
   { value: 'VENCIDO', label: 'Vencido', variant: 'destructive' as const },
   { value: 'CANCELADO', label: 'Cancelado', variant: 'secondary' as const },
 ];

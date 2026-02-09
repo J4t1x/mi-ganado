@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { API_CONFIG } from '@/lib/api/config';
 import { Beef, Loader2, AlertCircle } from 'lucide-react';
 
 export default function RegistroPage() {
@@ -38,8 +39,8 @@ export default function RegistroPage() {
     setIsLoading(true);
 
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8089';
-      const API_KEY = process.env.NEXT_PUBLIC_API_KEY || '';
+      const API_BASE_URL = API_CONFIG.baseUrl;
+      const API_KEY = API_CONFIG.apiKey;
 
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',

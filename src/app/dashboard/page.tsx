@@ -298,7 +298,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             {stats.animalesActivos > 0 || stats.animalesVendidos > 0 || stats.animalesMuertos > 0 ? (
-              <ResponsiveContainer width="100%" height={200}>
+              <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
                   <Pie
                     data={[
@@ -307,9 +307,9 @@ export default function DashboardPage() {
                       { name: 'Muertos', value: stats.animalesMuertos },
                     ].filter((d) => d.value > 0)}
                     cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={75}
+                    cy="45%"
+                    innerRadius={40}
+                    outerRadius={65}
                     paddingAngle={3}
                     dataKey="value"
                   >
@@ -318,7 +318,7 @@ export default function DashboardPage() {
                     <Cell fill="#6b7280" />
                   </Pie>
                   <Tooltip formatter={(value) => [Number(value).toLocaleString(), 'Animales']} />
-                  <Legend />
+                  <Legend verticalAlign="bottom" height={36} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
@@ -344,26 +344,40 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={250}>
               <BarChart
                 data={establecimientos.map((e) => ({
-                  nombre: e.nombre.length > 15 ? e.nombre.slice(0, 15) + '...' : e.nombre,
+                  nombre: e.nombre.length > 12 ? e.nombre.slice(0, 12) + '...' : e.nombre,
                   animales: e.cantidadAnimales,
                   fullName: e.nombre,
                 }))}
-                margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                margin={{ top: 5, right: 10, left: -10, bottom: establecimientos.length > 3 ? 40 : 5 }}
               >
+                <defs>
+                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#34d399" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#059669" stopOpacity={0.85} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="nombre" className="text-xs" tick={{ fontSize: 12 }} />
-                <YAxis className="text-xs" tick={{ fontSize: 12 }} />
+                <XAxis
+                  dataKey="nombre"
+                  className="text-xs"
+                  tick={{ fontSize: 11 }}
+                  angle={establecimientos.length > 3 ? -35 : 0}
+                  textAnchor={establecimientos.length > 3 ? 'end' : 'middle'}
+                  interval={0}
+                />
+                <YAxis className="text-xs" tick={{ fontSize: 11 }} width={35} />
                 <Tooltip
                   formatter={(value) => [Number(value).toLocaleString(), 'Animales']}
                   labelFormatter={(_label, payload) => {
                     const item = (payload as Array<{ payload?: { fullName?: string } }>)?.[0]?.payload;
                     return item?.fullName || String(_label);
                   }}
+                  contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px' }}
                 />
-                <Bar dataKey="animales" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="animales" fill="url(#barGradient)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

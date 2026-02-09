@@ -1,5 +1,6 @@
 import { PaginatedResponse } from '@/types';
 import { apiCache } from './cache';
+import { getApiConfig, getToken } from './config';
 
 // Types
 export type TipoCosto = 'ALIMENTACION' | 'SANITARIO' | 'MANO_OBRA' | 'TRANSPORTE' | 'INFRAESTRUCTURA' | 'OTRO';
@@ -96,18 +97,6 @@ export interface FinancieroQueryParams {
   loteId?: string;
   fechaDesde?: string;
   fechaHasta?: string;
-}
-
-function getToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('access_token');
-}
-
-function getApiConfig() {
-  return {
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8089',
-    apiKey: process.env.NEXT_PUBLIC_API_KEY || '',
-  };
 }
 
 function buildHeaders(token: string, apiKey: string) {

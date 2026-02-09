@@ -258,9 +258,12 @@ export default function PesajesPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={loadData}>
+          <Button variant="outline" size="sm" onClick={loadData} className="hidden sm:flex">
             <RefreshCw className="h-4 w-4 mr-2" />
             Actualizar
+          </Button>
+          <Button variant="outline" size="icon" onClick={loadData} className="sm:hidden h-9 w-9">
+            <RefreshCw className="h-4 w-4" />
           </Button>
 
           <Dialog open={importDialogOpen} onOpenChange={(open) => {
@@ -268,9 +271,10 @@ export default function PesajesPage() {
             if (!open) resetImport();
           }}>
             <DialogTrigger asChild>
-              <Button variant="outline">
+              <Button variant="outline" size="sm">
                 <Upload className="h-4 w-4 mr-2" />
-                Importar XR5000
+                <span className="hidden sm:inline">Importar XR5000</span>
+                <span className="sm:hidden">Importar</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-lg">

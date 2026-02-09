@@ -6,6 +6,7 @@ import {
   PaginatedResponse,
 } from '@/types';
 import { apiCache } from './cache';
+import { getApiConfig, getToken } from './config';
 
 export interface TitularesQueryParams {
   page?: number;
@@ -13,18 +14,6 @@ export interface TitularesQueryParams {
   search?: string;
   estado?: string;
   tipo?: string;
-}
-
-function getToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('access_token');
-}
-
-function getApiConfig() {
-  return {
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8089',
-    apiKey: process.env.NEXT_PUBLIC_API_KEY || '',
-  };
 }
 
 export const titularesService = {

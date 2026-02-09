@@ -1,7 +1,8 @@
 import { ApiError } from '@/types';
+import { API_CONFIG } from './config';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8089';
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY || '';
+const API_BASE_URL = API_CONFIG.baseUrl;
+const API_KEY = API_CONFIG.apiKey;
 
 class ApiClient {
   private baseURL: string;

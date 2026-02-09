@@ -251,15 +251,15 @@ export default function FinancieroPage() {
   };
 
   // Summary calculations
-  const sumCostos = costos.reduce((a, c) => a + c.monto, 0);
-  const sumVentas = ventas.reduce((a, v) => a + v.precioTotal, 0);
+  const sumCostos = costos.reduce((a, c) => a + Number(c.monto), 0);
+  const sumVentas = ventas.reduce((a, v) => a + Number(v.precioTotal), 0);
   const ventasPagadas = ventas.filter((v) => v.pagado).length;
   const ventasPendientes = ventas.filter((v) => !v.pagado).length;
 
   // Chart data
   const costosPorTipo = TIPOS_COSTO.map((t) => ({
     name: t.label,
-    value: costos.filter((c) => c.tipo === t.value).reduce((a, c) => a + c.monto, 0),
+    value: costos.filter((c) => c.tipo === t.value).reduce((a, c) => a + Number(c.monto), 0),
   })).filter((d) => d.value > 0);
 
   return (
@@ -439,7 +439,7 @@ export default function FinancieroPage() {
                             <Badge variant="outline">{TIPOS_COSTO.find((t) => t.value === costo.tipo)?.label || costo.tipo}</Badge>
                           </TableCell>
                           <TableCell className="font-medium">{costo.concepto}</TableCell>
-                          <TableCell className="text-right font-medium text-red-600">{formatCLP(costo.monto)}</TableCell>
+                          <TableCell className="text-right font-medium text-red-600">{formatCLP(Number(costo.monto))}</TableCell>
                           <TableCell>{costo.proveedor || '-'}</TableCell>
                           <TableCell className="text-right">
                             <Button variant="ghost" size="icon" onClick={() => { setDeleteTarget({ id: costo.id, type: 'costo' }); setDeleteDialogOpen(true); }}>
@@ -520,7 +520,7 @@ export default function FinancieroPage() {
                           </TableCell>
                           <TableCell className="font-medium">{venta.comprador}</TableCell>
                           <TableCell className="text-center">{venta.cantidadAnimales}</TableCell>
-                          <TableCell className="text-right font-medium text-green-600">{formatCLP(venta.precioTotal)}</TableCell>
+                          <TableCell className="text-right font-medium text-green-600">{formatCLP(Number(venta.precioTotal))}</TableCell>
                           <TableCell>
                             <Badge variant="outline">{FORMAS_PAGO.find((f) => f.value === venta.formaPago)?.label || venta.formaPago}</Badge>
                           </TableCell>

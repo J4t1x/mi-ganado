@@ -31,6 +31,7 @@ Plataforma web progresiva (PWA) para gestión integral de ganado bovino en Chile
 | [IMPLEMENTACION-ANIMALES.md](./implementation/IMPLEMENTACION-ANIMALES.md) | CRUD completo de animales: archivos, componentes, services | 2026-02-03 |
 | [IMPLEMENTACION-RAZAS.md](./implementation/IMPLEMENTACION-RAZAS.md) | Módulo de razas: catálogo por especie | 2026-02-03 |
 | [RESUMEN-IMPLEMENTACION.md](./implementation/RESUMEN-IMPLEMENTACION.md) | Resumen de avance frontend ↔ backend por módulo | 2026-01-30 |
+| [IMPLEMENTACION-RESPONSIVE-MOBILE.md](./implementation/IMPLEMENTACION-RESPONSIVE-MOBILE.md) | Responsive mobile: Sheet nav, card views, filtros, paginación | 2026-02-09 |
 
 ## Troubleshooting (`troubleshooting/`)
 

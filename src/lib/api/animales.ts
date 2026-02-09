@@ -8,6 +8,7 @@ import {
   CreateIdentificadorDto,
 } from '@/types';
 import { apiCache } from './cache';
+import { getApiConfig, getToken } from './config';
 
 export interface AnimalesQueryParams {
   page?: number;
@@ -19,17 +20,6 @@ export interface AnimalesQueryParams {
   loteId?: string;
 }
 
-function getToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('access_token');
-}
-
-function getApiConfig() {
-  return {
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8089',
-    apiKey: process.env.NEXT_PUBLIC_API_KEY || '',
-  };
-}
 
 export const animalesService = {
   async getAll(params?: AnimalesQueryParams): Promise<PaginatedResponse<AnimalWithRelations>> {

@@ -1,10 +1,11 @@
 import { PaginatedResponse } from '@/types';
 import { apiCache } from './cache';
+import { getApiConfig, getToken } from './config';
 
 // Types
 export interface EventoSanitario {
   id: string;
-  tipo: 'VACUNACION' | 'TRATAMIENTO' | 'DESPARASITACION' | 'DIAGNOSTICO' | 'OTRO';
+  tipo: 'VACUNACION' | 'TRATAMIENTO' | 'DESPARASITACION' | 'EXAMEN' | 'CIRUGIA' | 'OTRO';
   fecha: string;
   fechaProxima?: string;
   producto: string;
@@ -17,7 +18,7 @@ export interface EventoSanitario {
   animalId?: string;
   loteId?: string;
   establecimientoId?: string;
-  estado: 'PROGRAMADO' | 'APLICADO' | 'VENCIDO' | 'CANCELADO';
+  estado: 'PROGRAMADO' | 'REALIZADO' | 'VENCIDO' | 'CANCELADO';
   createdAt: string;
   updatedAt: string;
   animal?: {
@@ -73,17 +74,6 @@ export interface SanitarioQueryParams {
   fechaHasta?: string;
 }
 
-function getToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('access_token');
-}
-
-function getApiConfig() {
-  return {
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8089',
-    apiKey: process.env.NEXT_PUBLIC_API_KEY || '',
-  };
-}
 
 export const sanitarioService = {
   async getAll(params?: SanitarioQueryParams): Promise<PaginatedResponse<EventoSanitario>> {
@@ -109,7 +99,7 @@ export const sanitarioService = {
     if (cachedData) return cachedData;
 
     const response = await fetch(
-      `${baseUrl}/api/v1/ganado/eventos-sanitarios${query ? `?${query}` : ''}`,
+      `${baseUrl}/api/v1/ganado/sanitario${query ? `?${query}` : ''}`,
       {
         method: 'GET',
         headers: {
@@ -137,7 +127,7 @@ export const sanitarioService = {
 
     const { baseUrl, apiKey } = getApiConfig();
 
-    const response = await fetch(`${baseUrl}/api/v1/ganado/eventos-sanitarios/${id}`, {
+    const response = await fetch(`${baseUrl}/api/v1/ganado/sanitario/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -161,7 +151,7 @@ export const sanitarioService = {
 
     const { baseUrl, apiKey } = getApiConfig();
 
-    const response = await fetch(`${baseUrl}/api/v1/ganado/eventos-sanitarios`, {
+    const response = await fetch(`${baseUrl}/api/v1/ganado/sanitario`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -186,7 +176,7 @@ export const sanitarioService = {
 
     const { baseUrl, apiKey } = getApiConfig();
 
-    const response = await fetch(`${baseUrl}/api/v1/ganado/eventos-sanitarios/${id}`, {
+    const response = await fetch(`${baseUrl}/api/v1/ganado/sanitario/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -211,7 +201,7 @@ export const sanitarioService = {
 
     const { baseUrl, apiKey } = getApiConfig();
 
-    const response = await fetch(`${baseUrl}/api/v1/ganado/eventos-sanitarios/${id}`, {
+    const response = await fetch(`${baseUrl}/api/v1/ganado/sanitario/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

@@ -6,18 +6,7 @@ import {
   PaginatedResponse,
 } from '@/types';
 import { apiCache } from './cache';
-
-function getApiConfig() {
-  return {
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8089',
-    apiKey: process.env.NEXT_PUBLIC_API_KEY || '',
-  };
-}
-
-function getToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('access_token');
-}
+import { getApiConfig, getToken } from './config';
 
 export const establecimientosService = {
   async getAll(params?: Record<string, string>): Promise<PaginatedResponse<EstablecimientoWithRelations>> {

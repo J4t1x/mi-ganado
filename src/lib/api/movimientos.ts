@@ -1,5 +1,6 @@
 import { PaginatedResponse } from '@/types';
 import { apiCache } from './cache';
+import { getApiConfig, getToken } from './config';
 
 export type TipoMovimiento = 'TRASLADO' | 'VENTA' | 'COMPRA' | 'MUERTE' | 'AJUSTE';
 export type EstadoMovimiento = 'BORRADOR' | 'CONFIRMADO' | 'INFORMADO';
@@ -63,17 +64,6 @@ export interface MovimientosEstadisticas {
     total: number;
 }
 
-function getToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('access_token');
-}
-
-function getApiConfig() {
-    return {
-        baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8089',
-        apiKey: process.env.NEXT_PUBLIC_API_KEY || '',
-    };
-}
 
 export const movimientosService = {
     async getAll(params?: MovimientosQueryParams): Promise<PaginatedResponse<Movimiento>> {

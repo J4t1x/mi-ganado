@@ -372,14 +372,14 @@ export default function ReportesPage() {
         {/* ===== MOVIMIENTOS TAB ===== */}
         <TabsContent value="movimientos" className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-            <div className="flex gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:flex sm:gap-4">
               <div className="space-y-1">
                 <Label className="text-xs">Desde</Label>
                 <Input
                   type="date"
                   value={movFechas.desde}
                   onChange={(e) => setMovFechas({ ...movFechas, desde: e.target.value })}
-                  className="w-40"
+                  className="w-full sm:w-40"
                 />
               </div>
               <div className="space-y-1">
@@ -388,18 +388,19 @@ export default function ReportesPage() {
                   type="date"
                   value={movFechas.hasta}
                   onChange={(e) => setMovFechas({ ...movFechas, hasta: e.target.value })}
-                  className="w-40"
+                  className="w-full sm:w-40"
                 />
               </div>
             </div>
-            <div className="flex gap-2 ml-auto">
+            <div className="flex gap-2 sm:ml-auto">
               <Button variant="outline" size="sm" onClick={loadMovimientos}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Buscar
               </Button>
               <Button size="sm" onClick={exportMovimientos} disabled={movimientos.length === 0}>
                 <Download className="h-4 w-4 mr-2" />
-                Exportar CSV
+                <span className="hidden sm:inline">Exportar CSV</span>
+                <span className="sm:hidden">CSV</span>
               </Button>
             </div>
           </div>
@@ -484,14 +485,14 @@ export default function ReportesPage() {
         {/* ===== PESAJES TAB ===== */}
         <TabsContent value="pesajes" className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-            <div className="flex gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:flex sm:gap-4">
               <div className="space-y-1">
                 <Label className="text-xs">Desde</Label>
                 <Input
                   type="date"
                   value={pesFechas.desde}
                   onChange={(e) => setPesFechas({ ...pesFechas, desde: e.target.value })}
-                  className="w-40"
+                  className="w-full sm:w-40"
                 />
               </div>
               <div className="space-y-1">
@@ -500,18 +501,19 @@ export default function ReportesPage() {
                   type="date"
                   value={pesFechas.hasta}
                   onChange={(e) => setPesFechas({ ...pesFechas, hasta: e.target.value })}
-                  className="w-40"
+                  className="w-full sm:w-40"
                 />
               </div>
             </div>
-            <div className="flex gap-2 ml-auto">
+            <div className="flex gap-2 sm:ml-auto">
               <Button variant="outline" size="sm" onClick={loadPesajes}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Buscar
               </Button>
               <Button size="sm" onClick={exportPesajes} disabled={sesiones.length === 0}>
                 <Download className="h-4 w-4 mr-2" />
-                Exportar CSV
+                <span className="hidden sm:inline">Exportar CSV</span>
+                <span className="sm:hidden">CSV</span>
               </Button>
             </div>
           </div>

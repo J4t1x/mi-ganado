@@ -69,13 +69,14 @@ const TIPOS = [
   { value: 'VACUNACION', label: 'Vacunación', icon: Syringe },
   { value: 'TRATAMIENTO', label: 'Tratamiento', icon: Pill },
   { value: 'DESPARASITACION', label: 'Desparasitación', icon: Bug },
-  { value: 'DIAGNOSTICO', label: 'Diagnóstico', icon: Stethoscope },
+  { value: 'EXAMEN', label: 'Examen', icon: Stethoscope },
+  { value: 'CIRUGIA', label: 'Cirugía', icon: Stethoscope },
   { value: 'OTRO', label: 'Otro', icon: Calendar },
 ] as const;
 
 const ESTADOS = [
   { value: 'PROGRAMADO', label: 'Programado', variant: 'outline' as const },
-  { value: 'APLICADO', label: 'Aplicado', variant: 'default' as const },
+  { value: 'REALIZADO', label: 'Realizado', variant: 'default' as const },
   { value: 'VENCIDO', label: 'Vencido', variant: 'destructive' as const },
   { value: 'CANCELADO', label: 'Cancelado', variant: 'secondary' as const },
 ];
@@ -119,7 +120,7 @@ export default function SanitarioPage() {
     tipo: 'VACUNACION',
     fecha: new Date().toISOString().split('T')[0],
     producto: '',
-    estado: 'APLICADO',
+    estado: 'REALIZADO',
   });
 
   // Delete dialog
@@ -188,7 +189,7 @@ export default function SanitarioPage() {
         tipo: 'VACUNACION',
         fecha: new Date().toISOString().split('T')[0],
         producto: '',
-        estado: 'APLICADO',
+        estado: 'REALIZADO',
       });
       loadEventos();
       loadProximos();
@@ -231,7 +232,7 @@ export default function SanitarioPage() {
   };
 
   // Stats
-  const totalAplicados = eventos.filter((e) => e.estado === 'APLICADO').length;
+  const totalRealizados = eventos.filter((e) => e.estado === 'REALIZADO').length;
   const totalProgramados = eventos.filter((e) => e.estado === 'PROGRAMADO').length;
   const totalVencidos = eventos.filter((e) => e.estado === 'VENCIDO').length;
 
@@ -245,17 +246,24 @@ export default function SanitarioPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={loadEventos}>
+          <Button variant="outline" size="sm" onClick={loadEventos} className="hidden sm:flex">
             <RefreshCw className="h-4 w-4 mr-2" />
             Actualizar
           </Button>
-          <Button variant="outline" size="sm" onClick={handleExport} disabled={eventos.length === 0}>
+          <Button variant="outline" size="icon" onClick={loadEventos} className="sm:hidden h-9 w-9">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleExport} disabled={eventos.length === 0} className="hidden sm:flex">
             <Download className="h-4 w-4 mr-2" />
             Exportar
           </Button>
-          <Button onClick={() => setDialogOpen(true)}>
+          <Button variant="outline" size="icon" onClick={handleExport} disabled={eventos.length === 0} className="sm:hidden h-9 w-9">
+            <Download className="h-4 w-4" />
+          </Button>
+          <Button size="sm" onClick={() => setDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Nuevo Evento
+            <span className="hidden sm:inline">Nuevo Evento</span>
+            <span className="sm:hidden">Nuevo</span>
           </Button>
         </div>
       </div>
@@ -281,8 +289,8 @@ export default function SanitarioPage() {
               <CardContent className="pt-4 pb-3 flex items-center gap-3">
                 <CheckCircle className="h-5 w-5 text-green-600" />
                 <div>
-                  <p className="text-2xl font-bold text-green-600">{totalAplicados}</p>
-                  <p className="text-xs text-muted-foreground">Aplicados</p>
+                  <p className="text-2xl font-bold text-green-600">{totalRealizados}</p>
+                  <p className="text-xs text-muted-foreground">Realizados</p>
                 </div>
               </CardContent>
             </Card>
@@ -311,7 +319,7 @@ export default function SanitarioPage() {
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                 <div className="flex gap-2 flex-1">
                   <Select value={tipoFilter} onValueChange={(v) => { setTipoFilter(v); setCurrentPage(1); }}>
-                    <SelectTrigger className="w-[160px]">
+                    <SelectTrigger className="w-full sm:w-[160px]">
                       <SelectValue placeholder="Tipo" />
                     </SelectTrigger>
                     <SelectContent>
@@ -322,7 +330,7 @@ export default function SanitarioPage() {
                     </SelectContent>
                   </Select>
                   <Select value={estadoFilter} onValueChange={(v) => { setEstadoFilter(v); setCurrentPage(1); }}>
-                    <SelectTrigger className="w-[160px]">
+                    <SelectTrigger className="w-full sm:w-[160px]">
                       <SelectValue placeholder="Estado" />
                     </SelectTrigger>
                     <SelectContent>
@@ -354,7 +362,42 @@ export default function SanitarioPage() {
                 </div>
               ) : (
                 <>
-                  <div className="overflow-x-auto">
+                  {/* Mobile card view */}
+                  <div className="md:hidden space-y-3">
+                    {eventos.map((evento) => {
+                      const TipoIcon = getTipoIcon(evento.tipo);
+                      return (
+                        <Link
+                          key={evento.id}
+                          href={`/dashboard/sanitario/${evento.id}`}
+                          className="block border rounded-lg p-3 hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <TipoIcon className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm font-medium">
+                                {TIPOS.find((t) => t.value === evento.tipo)?.label || evento.tipo}
+                              </span>
+                            </div>
+                            <Badge variant={getEstadoBadgeVariant(evento.estado)}>
+                              {evento.estado}
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                            <div className="text-muted-foreground">Fecha</div>
+                            <div className="text-right">{new Date(evento.fecha).toLocaleDateString('es-CL')}</div>
+                            <div className="text-muted-foreground">Producto</div>
+                            <div className="text-right font-medium truncate">{evento.producto}</div>
+                            <div className="text-muted-foreground">Dosis</div>
+                            <div className="text-right">{evento.dosis || '-'}</div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+
+                  {/* Desktop table view */}
+                  <div className="hidden md:block overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -415,18 +458,19 @@ export default function SanitarioPage() {
                     </Table>
                   </div>
 
-                  <div className="flex items-center justify-between mt-4">
-                    <p className="text-sm text-muted-foreground">
-                      Página {currentPage} de {totalPages}
+                  <div className="flex items-center justify-between mt-4 gap-2">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      {currentPage}/{totalPages}
                     </p>
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                         disabled={currentPage === 1}
                       >
-                        Anterior
+                        <span className="hidden sm:inline">Anterior</span>
+                        <span className="sm:hidden">&lt;</span>
                       </Button>
                       <Button
                         variant="outline"
@@ -434,7 +478,8 @@ export default function SanitarioPage() {
                         onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                         disabled={currentPage === totalPages}
                       >
-                        Siguiente
+                        <span className="hidden sm:inline">Siguiente</span>
+                        <span className="sm:hidden">&gt;</span>
                       </Button>
                     </div>
                   </div>
@@ -550,7 +595,7 @@ export default function SanitarioPage() {
               <div className="space-y-2">
                 <Label>Estado</Label>
                 <Select
-                  value={formData.estado || 'APLICADO'}
+                  value={formData.estado || 'REALIZADO'}
                   onValueChange={(v) => setFormData({ ...formData, estado: v as EventoSanitario['estado'] })}
                 >
                   <SelectTrigger>

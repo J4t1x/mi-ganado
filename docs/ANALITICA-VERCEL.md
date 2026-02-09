@@ -2,6 +2,8 @@
 
 > **Fecha del informe:** 2026-02-09
 > **Ambiente:** Producción (Vercel)
+> **URL producción:** https://miganado.vercel.app (también https://miganado.cl)
+> **Último deploy:** 804691d — `feat: monitoreo Vercel + lint fixes + error boundaries`
 > **Herramientas:** Vercel Analytics, Speed Insights, Error Boundaries
 
 ---
@@ -23,19 +25,21 @@
 Ejecutar después de cada deploy a producción para confirmar que el monitoreo funciona.
 
 ### 2.1 Vercel Analytics
-- [ ] Abrir la app en producción y navegar por al menos 3 páginas
-- [ ] Ir a Vercel Dashboard → proyecto → **Analytics**
-- [ ] Verificar que aparecen page views recientes (puede tardar ~1 min)
+- [x] Abrir la app en producción y navegar por al menos 3 páginas
+- [x] Componente `Analytics` confirmado en HTML de producción (chunk `I[2355,...]`)
+- [ ] Ir a Vercel Dashboard → proyecto → **Analytics** y verificar page views
 - [ ] Confirmar métricas: top pages, visitantes, referrers
 
 ### 2.2 Speed Insights
+- [x] Componente `SpeedInsights` confirmado en HTML de producción (chunk `I[57215,...]`)
 - [ ] Navegar por `/dashboard`, `/dashboard/animales`, `/dashboard/movimientos`
 - [ ] Ir a Vercel Dashboard → proyecto → **Speed Insights**
 - [ ] Verificar que aparecen métricas de Core Web Vitals
 - [ ] Revisar: LCP < 2.5s, CLS < 0.1, INP < 200ms
 
 ### 2.3 Error Boundaries
-- [ ] Abrir DevTools → Console en producción
+- [x] Error boundary vinculado al layout (`"error":"$3"` en RSC payload)
+- [x] Scripts de error boundary cargados en producción
 - [ ] Provocar un error (ej: desconectar backend o visitar ruta con datos corruptos)
 - [ ] Verificar que aparece la UI de error con botón "Reintentar"
 - [ ] Ir a Vercel Dashboard → **Logs** y buscar tag `[DashboardError]` o `[AppError]`
@@ -45,7 +49,7 @@ Ejecutar después de cada deploy a producción para confirmar que el monitoreo f
 - [ ] Ir a Vercel Dashboard → proyecto → **Logs**
 - [ ] Filtrar por nivel "Error" en la última hora
 - [ ] Verificar que los `console.error` de los boundaries aparecen
-- [ ] Opcionalmente probar CLI: `vercel logs <url> --since=1h`
+- [ ] Probar CLI: `vercel logs https://miganado.vercel.app --since=1h`
 
 ---
 
@@ -108,10 +112,10 @@ Ejecutar después de cada deploy a producción para confirmar que el monitoreo f
 vercel ls mi-ganado
 
 # Logs de la última hora
-vercel logs https://mi-ganado.vercel.app --since=1h
+vercel logs https://miganado.vercel.app --since=1h
 
 # Logs filtrados por errores
-vercel logs https://mi-ganado.vercel.app --since=1h --level=error
+vercel logs https://miganado.vercel.app --since=1h --level=error
 ```
 
 ---

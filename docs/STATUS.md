@@ -1,6 +1,6 @@
 # Estado Actual — Mi Ganado
 
-**Última actualización:** 2026-02-09 (Sprint 9)
+**Última actualización:** 2026-02-09 (Sprint 9 + Genealogía)
 
 ## Sprints Completados
 
@@ -84,13 +84,20 @@
 - SP-49: Modelo Animal — `padreId`/`madreId` + self-relations genealogía ✅
 - SP-50: Prisma enums — `TipoEventoSanitario`, `EstadoEventoSanitario`, `TipoCosto`, `FormaPago` ✅
 
+### Genealogía (SP-14 completado)
+- BE: `padreId`/`madreId` en `CreateAnimalDto` + `UpdateAnimalDto` ✅
+- BE: Includes padre/madre/crías en `AnimalesService.findOne()` ✅
+- FE: Selectores padre (machos) / madre (hembras) en formulario animal ✅
+- FE: Card Genealogía en detalle animal (padre, madre, lista crías con links) ✅
+- FE: Types `AnimalGenealogiaRef`, `AnimalCriaRef` + campos en interfaces ✅
+
 ## Módulos del Dashboard
 
 | Módulo | Estado | Páginas | Service API | Componentes |
 |--------|--------|---------|-------------|-------------|
 | **Titulares** | ✅ Completo | CRUD | `titulares.ts` | `titulares/` |
 | **Establecimientos** | ✅ Completo | CRUD | `establecimientos.ts` | `establecimientos/` |
-| **Animales** | ✅ Completo | CRUD + detalle + gráfico peso + CSV export | `animales.ts` | `animales/` |
+| **Animales** | ✅ Completo | CRUD + detalle + gráfico peso + CSV export + genealogía | `animales.ts` | `animales/` |
 | **Razas** | ✅ Completo | CRUD + filtro especie + toggle estado | `razas.ts` | `configuracion/razas/` |
 | **Lotes** | ✅ Completo | CRUD + detalle + stats GDP/dispersión | `lotes.ts` | `lotes/` |
 | **Pesajes** | ✅ Completo | Listado + detalle + crear + importar XR5000 | `pesajes.ts` | `pesajes/` |
@@ -123,8 +130,8 @@
 ## Pendientes Backend
 - ✅ ~~`/auth/forgot-password`~~ — Implementado (Sprint 9)
 - ✅ ~~`/auth/change-password`~~ — Implementado (Sprint 9)
-- ✅ ~~`padreId`/`madreId` en modelo Animal~~ — Implementado (Sprint 9)
-- Migrar DB en Railway — `prisma migrate deploy` para aplicar nuevos modelos
+- ✅ ~~`padreId`/`madreId` en modelo Animal~~ — Implementado (Sprint 9 + Genealogía FE)
+- ✅ ~~Migrar DB Supabase~~ — `prisma migrate deploy` aplicado
 - Email service — Integrar envío real de emails para forgot-password
 
 ## Próximas Prioridades

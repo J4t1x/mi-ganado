@@ -23,6 +23,19 @@ import {
   Building2,
 } from 'lucide-react';
 import Link from 'next/link';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from 'recharts';
 import { dashboardService, DashboardStats, MovimientoReciente, EstablecimientoStat } from '@/lib/api/dashboard';
 import { DashboardSkeleton } from '@/components/dashboard/dashboard-skeleton';
 import { ErrorState } from '@/components/dashboard/error-state';
@@ -278,45 +291,84 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Establecimientos</CardTitle>
+            <CardTitle>Estado del Ganado</CardTitle>
             <CardDescription>
-              Distribución de ganado
+              Distribución por estado
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {establecimientos.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No hay establecimientos registrados
-              </div>
+          <CardContent>
+            {stats.animalesActivos > 0 || stats.animalesVendidos > 0 || stats.animalesMuertos > 0 ? (
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: 'Activos', value: stats.animalesActivos },
+                      { name: 'Vendidos', value: stats.animalesVendidos },
+                      { name: 'Muertos', value: stats.animalesMuertos },
+                    ].filter((d) => d.value > 0)}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={75}
+                    paddingAngle={3}
+                    dataKey="value"
+                  >
+                    <Cell fill="#16a34a" />
+                    <Cell fill="#2563eb" />
+                    <Cell fill="#6b7280" />
+                  </Pie>
+                  <Tooltip formatter={(value) => [Number(value).toLocaleString(), 'Animales']} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
             ) : (
-              <>
-                {establecimientos.map((est) => (
-                  <div key={est.id} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center">
-                        <Building2 className="h-4 w-4 text-secondary-foreground" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">{est.nombre}</p>
-                        <p className="text-xs text-muted-foreground">{est.tipo}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-bold">{est.cantidadAnimales}</p>
-                      <p className="text-xs text-muted-foreground">cabezas</p>
-                    </div>
-                  </div>
-                ))}
-                <Button variant="outline" className="w-full mt-4" asChild>
-                  <Link href="/dashboard/configuracion/establecimientos">
-                    Ver establecimientos
-                  </Link>
-                </Button>
-              </>
+              <div className="text-center py-8 text-muted-foreground">
+                Sin datos de animales
+              </div>
             )}
           </CardContent>
         </Card>
       </div>
+
+      {establecimientos.length > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Stock por Establecimiento</CardTitle>
+                <CardDescription>Cantidad de animales por ubicación</CardDescription>
+              </div>
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/dashboard/configuracion/establecimientos">Ver todos</Link>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart
+                data={establecimientos.map((e) => ({
+                  nombre: e.nombre.length > 15 ? e.nombre.slice(0, 15) + '...' : e.nombre,
+                  animales: e.cantidadAnimales,
+                  fullName: e.nombre,
+                }))}
+                margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="nombre" className="text-xs" tick={{ fontSize: 12 }} />
+                <YAxis className="text-xs" tick={{ fontSize: 12 }} />
+                <Tooltip
+                  formatter={(value) => [Number(value).toLocaleString(), 'Animales']}
+                  labelFormatter={(_label, payload) => {
+                    const item = (payload as Array<{ payload?: { fullName?: string } }>)?.[0]?.payload;
+                    return item?.fullName || String(_label);
+                  }}
+                />
+                <Bar dataKey="animales" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

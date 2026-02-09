@@ -1,6 +1,6 @@
 # Estado Actual — Mi Ganado
 
-**Última actualización:** 2026-02-09 (Sprint 4)
+**Última actualización:** 2026-02-09 (Sprint 5)
 
 ## Sprints Completados
 
@@ -10,6 +10,7 @@
 | **Sprint 2** | Reportes reales + gráficos | ✅ Completado | 2026-02-09 |
 | **Sprint 3** | Mejoras UX + Auth | ✅ Completado | 2026-02-09 |
 | **Sprint 4** | Módulo Sanitario | ✅ Completado | 2026-02-09 |
+| **Sprint 5** | Offline & PWA | ✅ Completado | 2026-02-09 |
 
 ### Sprint 1 — Detalle
 - SP-01: Movimientos crear conectado a API ✅
@@ -41,6 +42,13 @@
 - SP-21: Calendario sanitario — tab "Próximos 30 días" con alertas por urgencia ✅
 - SP-22: Sidebar link "Sanitario" con icono Syringe ✅
 
+### Sprint 5 — Detalle
+- SP-23: Offline page `/offline` + hook `useOnlineStatus` ✅
+- SP-24: Sync queue IndexedDB + SyncManager (auto-sync on reconnect) ✅
+- SP-25: SW v2 — API cache, stale-while-revalidate, offline mutation queue ✅
+- SP-26: PWA install prompt + mobile nav fix (Sanitario link) ✅
+- SP-27: Dashboard layout integration (SyncManager + InstallPrompt) ✅
+
 ## Módulos del Dashboard
 
 | Módulo | Estado | Páginas | Service API | Componentes |
@@ -65,7 +73,7 @@
 | **Backend (Railway)** | ✅ Desplegado | Configurado |
 | **PostgreSQL** | ✅ Activo | Railway |
 | **PWA / Service Worker** | ✅ Registrado | — |
-| **Offline mode** | 🔧 Parcial (store creado) | — |
+| **Offline mode** | ✅ Completo | SW v2 + sync queue + auto-sync |
 
 ## Dependencias Nuevas
 - `recharts` — Gráficos interactivos (Sprint 2)
@@ -81,6 +89,6 @@
 
 ## Próximas Prioridades
 
-1. **Sprint 5** — Modo Offline y PWA (sync queue, cache strategies)
-2. **Sprint 6** — Módulo Financiero (costos, ingresos, rentabilidad)
-3. **Sprint 7** — Notificaciones y alertas
+1. **Sprint 6** — Módulo Financiero (costos, ingresos, rentabilidad)
+2. **Sprint 7** — Notificaciones y alertas
+3. **Sprint 8** — Optimización y testing

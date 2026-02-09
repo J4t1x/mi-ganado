@@ -1,4 +1,6 @@
-const CACHE_NAME = 'mi-ganado-v1';
+const CACHE_VERSION = 2;
+const STATIC_CACHE = `mi-ganado-static-v${CACHE_VERSION}`;
+const API_CACHE = `mi-ganado-api-v${CACHE_VERSION}`;
 const OFFLINE_URL = '/offline';
 
 const STATIC_ASSETS = [
@@ -7,10 +9,13 @@ const STATIC_ASSETS = [
   '/manifest.json',
 ];
 
+// Max age for cached API responses (5 minutes)
+const API_CACHE_MAX_AGE = 5 * 60 * 1000;
+
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
+    caches.open(STATIC_CACHE).then((cache) => {
       console.log('[SW] Caching static assets');
       return cache.addAll(STATIC_ASSETS);
     })
@@ -24,79 +29,112 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+          .filter((name) => name !== STATIC_CACHE && name !== API_CACHE)
+          .map((name) => {
+            console.log('[SW] Deleting old cache:', name);
+            return caches.delete(name);
+          })
       );
     })
   );
   self.clients.claim();
 });
 
-// Fetch event - network first, fallback to cache
+// Fetch event
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET requests
-  if (request.method !== 'GET') {
+  // Skip chrome-extension, non-http
+  if (!url.protocol.startsWith('http')) return;
+
+  // Handle API requests (external backend)
+  if (url.pathname.includes('/api/v1/') || url.pathname.includes('/auth/')) {
+    if (request.method === 'GET') {
+      event.respondWith(handleApiGet(request));
+    } else {
+      event.respondWith(handleApiMutation(request));
+    }
     return;
   }
 
-  // Skip API requests - handle them separately
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(handleApiRequest(request));
-    return;
-  }
+  // Skip non-GET for other requests
+  if (request.method !== 'GET') return;
 
-  // For navigation requests, try network first
+  // For navigation requests, network first with offline fallback
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
-        .catch(() => caches.match(OFFLINE_URL))
+        .then((response) => {
+          // Cache the page for offline use
+          const clone = response.clone();
+          caches.open(STATIC_CACHE).then((cache) => cache.put(request, clone));
+          return response;
+        })
+        .catch(() => {
+          return caches.match(request).then((cached) => {
+            return cached || caches.match(OFFLINE_URL);
+          });
+        })
     );
     return;
   }
 
-  // For other requests, try cache first, then network
+  // Static assets: stale-while-revalidate
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(request).then((response) => {
-        // Cache successful responses
+      const fetchPromise = fetch(request).then((response) => {
         if (response.ok) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseClone);
-          });
+          const clone = response.clone();
+          caches.open(STATIC_CACHE).then((cache) => cache.put(request, clone));
         }
         return response;
-      });
+      }).catch(() => cachedResponse);
+
+      return cachedResponse || fetchPromise;
     })
   );
 });
 
-// Handle API requests with offline queue
-async function handleApiRequest(request) {
+// Handle API GET requests: network first, cache fallback
+async function handleApiGet(request) {
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const clone = response.clone();
+      const cache = await caches.open(API_CACHE);
+      await cache.put(request, clone);
+    }
+    return response;
+  } catch (error) {
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      console.log('[SW] Serving cached API response:', request.url);
+      return cachedResponse;
+    }
+    return new Response(
+      JSON.stringify({ error: 'Sin conexión', offline: true }),
+      { status: 503, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+}
+
+// Handle API mutations: try network, queue if offline
+async function handleApiMutation(request) {
   try {
     const response = await fetch(request);
     return response;
   } catch (error) {
-    // If offline and it's a mutation, queue it
-    if (request.method !== 'GET') {
-      await queueRequest(request);
-      return new Response(
-        JSON.stringify({ queued: true, message: 'Request queued for sync' }),
-        { headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-    // For GET requests, try to return cached data
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-    throw error;
+    await queueRequest(request);
+    // Notify clients about the queued request
+    const clients = await self.clients.matchAll();
+    clients.forEach((client) => {
+      client.postMessage({ type: 'SYNC_QUEUED', timestamp: Date.now() });
+    });
+    return new Response(
+      JSON.stringify({ queued: true, message: 'Operación guardada. Se sincronizará al reconectar.' }),
+      { status: 202, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 }
 

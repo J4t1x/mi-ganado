@@ -30,6 +30,7 @@ import {
   Scale,
   ArrowRightLeft,
   BarChart3,
+  Syringe,
 } from 'lucide-react';
 
 const mobileNavigation = [
@@ -39,6 +40,7 @@ const mobileNavigation = [
   { name: 'Pesajes', href: '/dashboard/pesajes', icon: Scale },
   { name: 'Movimientos', href: '/dashboard/movimientos', icon: ArrowRightLeft },
   { name: 'Reportes', href: '/dashboard/reportes', icon: BarChart3 },
+  { name: 'Sanitario', href: '/dashboard/sanitario', icon: Syringe },
 ];
 
 export function Header() {

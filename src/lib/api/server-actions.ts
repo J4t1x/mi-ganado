@@ -56,6 +56,55 @@ export async function getProfileAction(token: string) {
   }
 }
 
+export async function forgotPasswordAction(email: string) {
+  const { baseUrl, apiKey } = getApiConfig();
+
+  try {
+    const response = await fetch(`${baseUrl}/auth/forgot-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': apiKey,
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Error al enviar solicitud' }));
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Error de conexión' };
+  }
+}
+
+export async function changePasswordAction(token: string, currentPassword: string, newPassword: string) {
+  const { baseUrl, apiKey } = getApiConfig();
+
+  try {
+    const response = await fetch(`${baseUrl}/auth/change-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': apiKey,
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Error al cambiar contraseña' }));
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Error de conexión' };
+  }
+}
+
 export async function apiRequest<T>(
   endpoint: string,
   token: string,

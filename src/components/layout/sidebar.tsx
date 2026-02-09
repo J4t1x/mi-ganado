@@ -16,6 +16,7 @@ import {
   Dna,
   Lock,
   Syringe,
+  DollarSign,
 } from 'lucide-react';
 
 const navigation = [
@@ -26,6 +27,7 @@ const navigation = [
   { name: 'Movimientos', href: '/dashboard/movimientos', icon: ArrowRightLeft },
   { name: 'Reportes', href: '/dashboard/reportes', icon: BarChart3 },
   { name: 'Sanitario', href: '/dashboard/sanitario', icon: Syringe },
+  { name: 'Financiero', href: '/dashboard/financiero', icon: DollarSign },
 ];
 
 const secondaryNavigation = [

@@ -31,6 +31,7 @@ import {
   ArrowRightLeft,
   BarChart3,
   Syringe,
+  DollarSign,
 } from 'lucide-react';
 
 const mobileNavigation = [
@@ -41,6 +42,7 @@ const mobileNavigation = [
   { name: 'Movimientos', href: '/dashboard/movimientos', icon: ArrowRightLeft },
   { name: 'Reportes', href: '/dashboard/reportes', icon: BarChart3 },
   { name: 'Sanitario', href: '/dashboard/sanitario', icon: Syringe },
+  { name: 'Financiero', href: '/dashboard/financiero', icon: DollarSign },
 ];
 
 export function Header() {

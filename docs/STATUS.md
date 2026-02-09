@@ -1,6 +1,6 @@
 # Estado Actual — Mi Ganado
 
-**Última actualización:** 2026-02-09 (Sprint 5)
+**Última actualización:** 2026-02-09 (Sprint 6)
 
 ## Sprints Completados
 
@@ -11,6 +11,7 @@
 | **Sprint 3** | Mejoras UX + Auth | ✅ Completado | 2026-02-09 |
 | **Sprint 4** | Módulo Sanitario | ✅ Completado | 2026-02-09 |
 | **Sprint 5** | Offline & PWA | ✅ Completado | 2026-02-09 |
+| **Sprint 6** | Módulo Financiero | ✅ Completado | 2026-02-09 |
 
 ### Sprint 1 — Detalle
 - SP-01: Movimientos crear conectado a API ✅
@@ -49,6 +50,14 @@
 - SP-26: PWA install prompt + mobile nav fix (Sanitario link) ✅
 - SP-27: Dashboard layout integration (SyncManager + InstallPrompt) ✅
 
+### Sprint 6 — Detalle
+- SP-28: API service financiero (`src/lib/api/financiero.ts`) — costos + ventas CRUD ✅
+- SP-29: Página principal financiero — tabs Costos/Ventas, summary cards, PieChart ✅
+- SP-30: Registro de costos — CRUD con tipo, concepto, monto, proveedor, documento ✅
+- SP-31: Registro de ventas — comprador, animales, precio, forma pago, estado pago ✅
+- SP-32: Dashboard rentabilidad — cards (costos/ventas/rentabilidad/pendientes) + PieChart distribución ✅
+- SP-33: Sidebar + mobile nav link "Financiero" con icono DollarSign ✅
+
 ## Módulos del Dashboard
 
 | Módulo | Estado | Páginas | Service API | Componentes |
@@ -64,6 +73,7 @@
 | **Dashboard** | ✅ Completo | Stats + PieChart + BarChart + tabla movimientos | `dashboard.ts` | `dashboard/` |
 | **Auth** | ✅ Completo | Login + registro + forgot password + cambiar contraseña | `auth-client.ts` | `(auth)/` |
 | **Sanitario** | ✅ Completo | Listado + detalle + crear + editar + calendario | `sanitario.ts` | `sanitario/` |
+| **Financiero** | ✅ Completo | Costos + ventas + rentabilidad + PieChart | `financiero.ts` | `financiero/` |
 
 ## Infraestructura
 
@@ -89,6 +99,5 @@
 
 ## Próximas Prioridades
 
-1. **Sprint 6** — Módulo Financiero (costos, ingresos, rentabilidad)
-2. **Sprint 7** — Notificaciones y alertas
-3. **Sprint 8** — Optimización y testing
+1. **Sprint 7** — Notificaciones y alertas
+2. **Sprint 8** — Optimización y testing

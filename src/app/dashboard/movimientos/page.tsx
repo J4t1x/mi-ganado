@@ -281,15 +281,19 @@ export default function MovimientosPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={loadData}>
+          <Button variant="outline" size="sm" onClick={loadData} className="hidden sm:flex">
             <RefreshCw className="h-4 w-4 mr-2" />
             Actualizar
           </Button>
+          <Button variant="outline" size="icon" onClick={loadData} className="sm:hidden h-9 w-9">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button size="sm">
                 <Plus className="h-4 w-4 mr-2" />
-                Nuevo Movimiento
+                <span className="hidden sm:inline">Nuevo Movimiento</span>
+                <span className="sm:hidden">Nuevo</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-lg">
@@ -511,7 +515,49 @@ export default function MovimientosPage() {
               <Loader2 className="h-8 w-8 animate-spin" />
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div>
+            {/* Mobile card view */}
+            <div className="md:hidden space-y-3">
+              {filteredMovimientos.length === 0 ? (
+                <p className="text-center py-8 text-muted-foreground">No se encontraron movimientos</p>
+              ) : (
+                filteredMovimientos.map((mov) => {
+                  const Icon = getMovementIcon(mov.tipo);
+                  return (
+                    <Link
+                      key={mov.id}
+                      href={`/dashboard/movimientos/${mov.id}`}
+                      className="block border rounded-lg p-3 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Icon className="h-4 w-4 text-muted-foreground" />
+                          <Badge variant={getMovementBadgeVariant(mov.tipo) as "default" | "secondary" | "outline" | "destructive"}>
+                            {mov.tipo}
+                          </Badge>
+                        </div>
+                        <Badge variant={getStatusBadgeVariant(mov.estado) as "default" | "secondary" | "outline" | "destructive"}>
+                          {mov.estado}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                        <div className="text-muted-foreground">Fecha</div>
+                        <div className="text-right">{new Date(mov.fecha).toLocaleDateString('es-CL')}</div>
+                        <div className="text-muted-foreground">Animales</div>
+                        <div className="text-right font-medium">{mov.cantidadAnimales || 0}</div>
+                        <div className="text-muted-foreground">Origen</div>
+                        <div className="text-right truncate">{mov.establecimientoOrigen?.nombre || '-'}</div>
+                        <div className="text-muted-foreground">Destino</div>
+                        <div className="text-right truncate">{mov.establecimientoDestino?.nombre || '-'}</div>
+                      </div>
+                    </Link>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Desktop table view */}
+            <div className="hidden md:block overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -590,6 +636,7 @@ export default function MovimientosPage() {
                   )}
                 </TableBody>
               </Table>
+            </div>
             </div>
           )}
         </CardContent>

@@ -1,6 +1,6 @@
 # Estado Actual — Mi Ganado
 
-**Última actualización:** 2026-02-09 (Sprint 6)
+**Última actualización:** 2026-02-09 (Sprint 7 — FINAL)
 
 ## Sprints Completados
 
@@ -12,6 +12,7 @@
 | **Sprint 4** | Módulo Sanitario | ✅ Completado | 2026-02-09 |
 | **Sprint 5** | Offline & PWA | ✅ Completado | 2026-02-09 |
 | **Sprint 6** | Módulo Financiero | ✅ Completado | 2026-02-09 |
+| **Sprint 7** | Notificaciones y Alertas | ✅ Completado | 2026-02-09 |
 
 ### Sprint 1 — Detalle
 - SP-01: Movimientos crear conectado a API ✅
@@ -58,6 +59,13 @@
 - SP-32: Dashboard rentabilidad — cards (costos/ventas/rentabilidad/pendientes) + PieChart distribución ✅
 - SP-33: Sidebar + mobile nav link "Financiero" con icono DollarSign ✅
 
+### Sprint 7 — Detalle
+- SP-34: Notifications store (Zustand + persist en localStorage, max 50) ✅
+- SP-35: Centro de notificaciones — dropdown en header con badge, mark read, clear ✅
+- SP-36: Motor de alertas automáticas — sanitario vencidos/hoy, ventas pendientes, movimientos borrador ✅
+- SP-37: Página configuración de alertas — switches por categoría + estado notificaciones ✅
+- SP-38: Fix bug Turbopack parse en movimientos (fragment → div) ✅
+
 ## Módulos del Dashboard
 
 | Módulo | Estado | Páginas | Service API | Componentes |
@@ -74,6 +82,7 @@
 | **Auth** | ✅ Completo | Login + registro + forgot password + cambiar contraseña | `auth-client.ts` | `(auth)/` |
 | **Sanitario** | ✅ Completo | Listado + detalle + crear + editar + calendario | `sanitario.ts` | `sanitario/` |
 | **Financiero** | ✅ Completo | Costos + ventas + rentabilidad + PieChart | `financiero.ts` | `financiero/` |
+| **Notificaciones** | ✅ Completo | Centro notificaciones + alertas automáticas + config | `notifications-store.ts` | `notifications/` |
 
 ## Infraestructura
 
@@ -99,5 +108,7 @@
 
 ## Próximas Prioridades
 
-1. **Sprint 7** — Notificaciones y alertas
-2. **Sprint 8** — Optimización y testing
+1. **Endpoints backend** — Sanitario, financiero, auth (forgot/change password)
+2. **Testing** — Unit tests + E2E con Playwright
+3. **Integración SIPEC/SAG** — Trazabilidad oficial
+4. **Módulo Reproducción** — Servicios, gestación, partos

@@ -17,6 +17,7 @@ import {
   Lock,
   Syringe,
   DollarSign,
+  Bell,
 } from 'lucide-react';
 
 const navigation = [
@@ -35,6 +36,7 @@ const secondaryNavigation = [
   { name: 'Titulares', href: '/dashboard/configuracion/titulares', icon: Users },
   { name: 'Razas', href: '/dashboard/configuracion/razas', icon: Dna },
   { name: 'Contraseña', href: '/dashboard/configuracion/cambiar-password', icon: Lock },
+  { name: 'Alertas', href: '/dashboard/configuracion/alertas', icon: Bell },
   { name: 'Configuración', href: '/dashboard/configuracion', icon: Settings },
 ];
 

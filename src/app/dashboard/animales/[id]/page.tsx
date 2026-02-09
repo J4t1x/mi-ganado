@@ -18,6 +18,7 @@ import {
   Scale,
   FileText,
   TrendingUp,
+  GitBranch,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -182,6 +183,90 @@ export default function AnimalDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <GitBranch className="h-5 w-5" />
+            Genealogía
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Padre</p>
+              {animal.padre ? (
+                <Link
+                  href={`/dashboard/animales/${animal.padre.id}`}
+                  className="font-medium text-primary hover:underline"
+                >
+                  {animal.padre.identificadores?.[0]?.codigo || animal.padre.id.slice(0, 8)}
+                  {animal.padre.raza?.nombre && ` — ${animal.padre.raza.nombre}`}
+                </Link>
+              ) : (
+                <p className="font-medium text-muted-foreground">No registrado</p>
+              )}
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Madre</p>
+              {animal.madre ? (
+                <Link
+                  href={`/dashboard/animales/${animal.madre.id}`}
+                  className="font-medium text-primary hover:underline"
+                >
+                  {animal.madre.identificadores?.[0]?.codigo || animal.madre.id.slice(0, 8)}
+                  {animal.madre.raza?.nombre && ` — ${animal.madre.raza.nombre}`}
+                </Link>
+              ) : (
+                <p className="font-medium text-muted-foreground">No registrada</p>
+              )}
+            </div>
+          </div>
+
+          {((animal.criasPadre && animal.criasPadre.length > 0) ||
+            (animal.criasMadre && animal.criasMadre.length > 0)) && (
+            <>
+              <Separator />
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">Crías</p>
+                <div className="space-y-2">
+                  {[
+                    ...(animal.criasPadre || []),
+                    ...(animal.criasMadre || []),
+                  ]
+                    .filter((cria, index, self) => self.findIndex(c => c.id === cria.id) === index)
+                    .map((cria) => (
+                      <div
+                        key={cria.id}
+                        className="flex items-center justify-between p-2 border rounded-lg"
+                      >
+                        <Link
+                          href={`/dashboard/animales/${cria.id}`}
+                          className="font-medium text-primary hover:underline"
+                        >
+                          {cria.identificadores?.[0]?.codigo || cria.id.slice(0, 8)}
+                        </Link>
+                        <div className="flex items-center gap-2">
+                          {cria.sexo && (
+                            <Badge variant="outline">{cria.sexo}</Badge>
+                          )}
+                          {cria.fechaNacimiento && (
+                            <span className="text-sm text-muted-foreground">
+                              {new Date(cria.fechaNacimiento).toLocaleDateString('es-CL')}
+                            </span>
+                          )}
+                          <Badge variant={cria.estado === 'ACTIVO' ? 'default' : 'secondary'}>
+                            {cria.estado}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

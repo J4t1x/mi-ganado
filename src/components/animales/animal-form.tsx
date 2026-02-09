@@ -21,6 +21,7 @@ import {
   Sexo,
   TipoIdentificador,
   Animal,
+  AnimalWithRelations,
   TitularWithEstablecimientos,
   EstablecimientoWithRelations,
   Raza,
@@ -28,6 +29,7 @@ import {
 import { titularesService } from '@/lib/api/titulares';
 import { establecimientosService } from '@/lib/api/establecimientos';
 import { razasService } from '@/lib/api/razas';
+import { animalesService } from '@/lib/api/animales';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 
 const animalSchema = z.object({
@@ -57,9 +59,12 @@ export function AnimalForm({ animal, onSubmit, onCancel, isLoading }: AnimalForm
   const [titulares, setTitulares] = useState<TitularWithEstablecimientos[]>([]);
   const [establecimientos, setEstablecimientos] = useState<EstablecimientoWithRelations[]>([]);
   const [razas, setRazas] = useState<Raza[]>([]);
+  const [machos, setMachos] = useState<AnimalWithRelations[]>([]);
+  const [hembras, setHembras] = useState<AnimalWithRelations[]>([]);
   const [identificadores, setIdentificadores] = useState<IdentificadorFormItem[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [loadingRazas, setLoadingRazas] = useState(false);
+  const [loadingParents, setLoadingParents] = useState(false);
 
   const {
     register,
@@ -88,6 +93,10 @@ export function AnimalForm({ animal, onSubmit, onCancel, isLoading }: AnimalForm
       setEstablecimientos([]);
     }
   }, [selectedTitularId]);
+
+  useEffect(() => {
+    loadParents();
+  }, []);
 
   useEffect(() => {
     if (selectedEspecie) {
@@ -130,6 +139,27 @@ export function AnimalForm({ animal, onSubmit, onCancel, isLoading }: AnimalForm
     }
   };
 
+  const loadParents = async () => {
+    setLoadingParents(true);
+    try {
+      const [machosRes, hembrasRes] = await Promise.all([
+        animalesService.getAll({ sexo: 'MACHO' as Sexo, limit: 100 }),
+        animalesService.getAll({ sexo: 'HEMBRA' as Sexo, limit: 100 }),
+      ]);
+      setMachos(machosRes.data || []);
+      setHembras(hembrasRes.data || []);
+    } catch (error) {
+      console.error('Error loading parents:', error);
+    } finally {
+      setLoadingParents(false);
+    }
+  };
+
+  const getAnimalLabel = (a: AnimalWithRelations) => {
+    const diio = a.identificadores?.find(i => i.activo)?.codigo;
+    return diio || a.id.slice(0, 8);
+  };
+
   const addIdentificador = () => {
     setIdentificadores([
       ...identificadores,
@@ -159,6 +189,8 @@ export function AnimalForm({ animal, onSubmit, onCancel, isLoading }: AnimalForm
       titularActualId: data.titularActualId,
       establecimientoActualId: data.establecimientoActualId,
       loteId: data.loteId,
+      padreId: data.padreId || undefined,
+      madreId: data.madreId || undefined,
       identificadores: identificadores.length > 0 
         ? identificadores.map(id => ({
             tipo: id.tipo,
@@ -319,6 +351,73 @@ export function AnimalForm({ animal, onSubmit, onCancel, isLoading }: AnimalForm
                       {est.nombre}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Genealogía</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="padreId">Padre</Label>
+              <Select
+                value={watch('padreId') || ''}
+                onValueChange={(value) => setValue('padreId', value === '_none' ? undefined : value)}
+                disabled={loadingParents}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar padre" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_none">Sin padre registrado</SelectItem>
+                  {loadingParents ? (
+                    <div className="flex items-center justify-center p-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    </div>
+                  ) : (
+                    machos
+                      .filter(m => m.id !== animal?.id)
+                      .map((m) => (
+                        <SelectItem key={m.id} value={m.id}>
+                          {getAnimalLabel(m)} — {m.raza?.nombre || m.especie}
+                        </SelectItem>
+                      ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="madreId">Madre</Label>
+              <Select
+                value={watch('madreId') || ''}
+                onValueChange={(value) => setValue('madreId', value === '_none' ? undefined : value)}
+                disabled={loadingParents}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar madre" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_none">Sin madre registrada</SelectItem>
+                  {loadingParents ? (
+                    <div className="flex items-center justify-center p-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    </div>
+                  ) : (
+                    hembras
+                      .filter(h => h.id !== animal?.id)
+                      .map((h) => (
+                        <SelectItem key={h.id} value={h.id}>
+                          {getAnimalLabel(h)} — {h.raza?.nombre || h.especie}
+                        </SelectItem>
+                      ))
+                  )}
                 </SelectContent>
               </Select>
             </div>

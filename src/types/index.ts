@@ -136,6 +136,8 @@ export interface Animal {
   trazabilidadCompleta?: boolean;
   usoAnabolicos?: boolean;
   usoMedicamentoNoPermitido?: boolean;
+  padreId?: string;
+  madreId?: string;
   createdAt: string;
   updatedAt: string;
   raza?: Raza;
@@ -144,6 +146,24 @@ export interface Animal {
   lote?: Lote;
   identificadores?: Identificador[];
   manejosSanitarios?: ManejoSanitario[];
+  padre?: AnimalGenealogiaRef;
+  madre?: AnimalGenealogiaRef;
+}
+
+export interface AnimalGenealogiaRef {
+  id: string;
+  sexo?: Sexo;
+  especie?: Especie;
+  raza?: { nombre: string };
+  identificadores?: Identificador[];
+}
+
+export interface AnimalCriaRef {
+  id: string;
+  sexo?: Sexo;
+  estado: EstadoAnimal;
+  fechaNacimiento?: string;
+  identificadores?: Identificador[];
 }
 
 export interface Identificador {
@@ -342,6 +362,8 @@ export interface CreateAnimalDto {
   titularActualId?: string;
   establecimientoActualId?: string;
   loteId?: string;
+  padreId?: string;
+  madreId?: string;
   identificadores?: CreateIdentificadorDto[];
   // Campos de trazabilidad
   rupOrigen?: string;
@@ -364,6 +386,8 @@ export interface UpdateAnimalDto {
   titularActualId?: string;
   establecimientoActualId?: string;
   loteId?: string;
+  padreId?: string;
+  madreId?: string;
   estado?: EstadoAnimal;
   // Campos de trazabilidad
   rupOrigen?: string;
@@ -380,6 +404,10 @@ export interface UpdateAnimalDto {
 export interface AnimalWithRelations extends Animal {
   identificadores?: Identificador[];
   pesajes?: Pesaje[];
+  padre?: AnimalGenealogiaRef;
+  madre?: AnimalGenealogiaRef;
+  criasPadre?: AnimalCriaRef[];
+  criasMadre?: AnimalCriaRef[];
   _count?: {
     identificadores: number;
     pesajes: number;

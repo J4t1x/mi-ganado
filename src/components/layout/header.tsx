@@ -42,6 +42,7 @@ import {
   Users,
   Dna,
   Lock,
+  HelpCircle,
 } from 'lucide-react';
 
 const mobileNavigation = [
@@ -143,6 +144,12 @@ export function Header() {
                   Configuración
                 </Link>
               </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/ayuda">
+                  <HelpCircle className="mr-2 h-4 w-4" />
+                  Ayuda
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logout} className="text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
@@ -215,6 +222,21 @@ export function Header() {
                   );
                 })}
               </div>
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-border">
+              <Link
+                href="/dashboard/ayuda"
+                className={cn(
+                  'flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors',
+                  pathname === '/dashboard/ayuda'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-foreground hover:bg-muted'
+                )}
+              >
+                <HelpCircle className="h-5 w-5 flex-shrink-0" />
+                Ayuda
+              </Link>
             </div>
           </nav>
 

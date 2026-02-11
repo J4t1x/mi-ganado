@@ -18,6 +18,7 @@ import {
   Syringe,
   DollarSign,
   Bell,
+  HelpCircle,
 } from 'lucide-react';
 
 const navigation = [
@@ -116,6 +117,26 @@ export function Sidebar() {
                 );
               })}
             </div>
+          </div>
+
+          <div className="pt-4 pb-2">
+            <Link
+              href="/dashboard/ayuda"
+              className={cn(
+                'group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors',
+                pathname === '/dashboard/ayuda'
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                  : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
+              )}
+            >
+              <HelpCircle
+                className={cn(
+                  'mr-3 h-5 w-5 flex-shrink-0',
+                  pathname === '/dashboard/ayuda' ? 'text-sidebar-primary' : 'text-muted-foreground'
+                )}
+              />
+              Ayuda
+            </Link>
           </div>
         </nav>
       </div>

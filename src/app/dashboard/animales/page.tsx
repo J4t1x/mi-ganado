@@ -285,14 +285,22 @@ export default function AnimalesPage() {
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin" />
             </div>
+          ) : animales.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <Scale className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No hay animales registrados</p>
+              <Button variant="outline" className="mt-4" asChild>
+                <Link href="/dashboard/animales/nuevo">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Registrar primer animal
+                </Link>
+              </Button>
+            </div>
           ) : (
             <>
               {/* Mobile card view */}
               <div className="md:hidden space-y-3">
-                {animales.length === 0 ? (
-                  <p className="text-center py-8 text-muted-foreground">No se encontraron animales</p>
-                ) : (
-                  animales.map((animal) => (
+                {animales.map((animal) => (
                     <Link
                       key={animal.id}
                       href={`/dashboard/animales/${animal.id}`}
@@ -319,8 +327,7 @@ export default function AnimalesPage() {
                         </div>
                       </div>
                     </Link>
-                  ))
-                )}
+                  ))}
               </div>
 
               {/* Desktop table view */}
@@ -339,14 +346,7 @@ export default function AnimalesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {animales.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                          No se encontraron animales
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      animales.map((animal) => (
+                    {animales.map((animal) => (
                         <TableRow key={animal.id} className="hover:bg-muted/50">
                           <TableCell className="font-mono font-medium">
                             {getIdentificador(animal, TipoIdentificador.DIIO_VISUAL)}
@@ -408,8 +408,7 @@ export default function AnimalesPage() {
                             </DropdownMenu>
                           </TableCell>
                         </TableRow>
-                      ))
-                    )}
+                      ))}
                   </TableBody>
                 </Table>
               </div>

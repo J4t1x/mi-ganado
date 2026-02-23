@@ -573,8 +573,15 @@ export default function PesajesPage() {
                 <TableBody>
                   {filteredSesiones.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                        No se encontraron sesiones de pesaje
+                      <TableCell colSpan={7}>
+                        <div className="text-center py-12 text-muted-foreground">
+                          <Scale className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p>No hay sesiones de pesaje registradas</p>
+                          <Button variant="outline" className="mt-4" onClick={() => setDialogOpen(true)}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Registrar primera sesión
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ) : (

@@ -514,14 +514,20 @@ export default function MovimientosPage() {
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin" />
             </div>
+          ) : filteredMovimientos.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <ArrowRightLeft className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No hay movimientos registrados</p>
+              <Button variant="outline" className="mt-4" onClick={() => setDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Registrar primer movimiento
+              </Button>
+            </div>
           ) : (
             <div>
             {/* Mobile card view */}
             <div className="md:hidden space-y-3">
-              {filteredMovimientos.length === 0 ? (
-                <p className="text-center py-8 text-muted-foreground">No se encontraron movimientos</p>
-              ) : (
-                filteredMovimientos.map((mov) => {
+              {filteredMovimientos.map((mov) => {
                   const Icon = getMovementIcon(mov.tipo);
                   return (
                     <Link
@@ -552,8 +558,7 @@ export default function MovimientosPage() {
                       </div>
                     </Link>
                   );
-                })
-              )}
+                })}
             </div>
 
             {/* Desktop table view */}
@@ -571,14 +576,7 @@ export default function MovimientosPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredMovimientos.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                        No se encontraron movimientos
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredMovimientos.map((mov) => {
+                  {filteredMovimientos.map((mov) => {
                       const Icon = getMovementIcon(mov.tipo);
                       return (
                         <TableRow key={mov.id}>
@@ -632,8 +630,7 @@ export default function MovimientosPage() {
                           </TableCell>
                         </TableRow>
                       );
-                    })
-                  )}
+                    })}
                 </TableBody>
               </Table>
             </div>

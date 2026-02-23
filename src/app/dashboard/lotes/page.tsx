@@ -326,10 +326,14 @@ export default function LotesPage() {
       {!loading && filteredLotes.length === 0 && (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Package className="h-12 w-12 text-muted-foreground mb-4" />
+            <Package className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
             <p className="text-muted-foreground text-center">
-              No se encontraron lotes
+              No hay lotes registrados
             </p>
+            <Button variant="outline" className="mt-4" onClick={() => setDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Crear primer lote
+            </Button>
           </CardContent>
         </Card>
       )}

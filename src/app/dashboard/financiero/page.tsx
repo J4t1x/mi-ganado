@@ -415,6 +415,10 @@ export default function FinancieroPage() {
                 <div className="text-center py-12 text-muted-foreground">
                   <Receipt className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No hay costos registrados</p>
+                  <Button variant="outline" className="mt-4" onClick={() => setCostoDialogOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Registrar primer costo
+                  </Button>
                 </div>
               ) : (
                 <>
@@ -497,6 +501,10 @@ export default function FinancieroPage() {
                 <div className="text-center py-12 text-muted-foreground">
                   <ShoppingCart className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No hay ventas registradas</p>
+                  <Button variant="outline" className="mt-4" onClick={() => setVentaDialogOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Registrar primera venta
+                  </Button>
                 </div>
               ) : (
                 <>

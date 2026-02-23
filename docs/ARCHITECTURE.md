@@ -1,6 +1,6 @@
 # Arquitectura Técnica — Mi Ganado
 
-**Última actualización:** 2026-02-08
+**Última actualización:** 2026-02-11
 
 ## Diagrama General
 
@@ -49,9 +49,15 @@ graph TB
 | Framework | Next.js (App Router) | 16.1.6 |
 | UI | React + TailwindCSS 4 | 19.2.3 |
 | Componentes | shadcn/ui + Radix UI | latest |
-| Estado | Zustand (auth, offline) | 5.0 |
-| Data fetching | TanStack Query | 5.x |
-| Formularios | React Hook Form + Zod | 7.x + 4.x |
+| Estado | Zustand (auth, offline, notifications) | 5.0.10 |
+| Data fetching | TanStack Query | 5.90.20 |
+| Formularios | React Hook Form + Zod | 7.71.1 + 4.3.6 |
+| Gráficos | Recharts | 3.7.0 |
+| Animaciones | Framer Motion | 12.29.2 |
+| Notificaciones | Sonner | 2.0.7 |
+| Temas | next-themes | 0.4.6 |
+| Iconos | Lucide React | 0.563.0 |
+| Analytics | @vercel/analytics + @vercel/speed-insights | 1.6.1 / 1.3.1 |
 | Backend | NestJS + Prisma | — |
 | DB | PostgreSQL | — |
 | Deploy FE | Vercel | — |
@@ -68,6 +74,8 @@ erDiagram
     Lote ||--o{ Animal : "agrupa"
     Animal ||--o{ Identificador : "tiene"
     Animal ||--o{ ManejoSanitario : "registra"
+    Animal ||--o| Animal : "padre"
+    Animal ||--o| Animal : "madre"
     Animal ||--o{ Pesaje : "pesa"
     SesionPesaje ||--o{ Pesaje : "contiene"
     Lote ||--o{ SesionPesaje : "asociada"
@@ -95,6 +103,7 @@ erDiagram
 | **MovimientoDetalle** | Animal incluido en un movimiento | — |
 | **Documento** | Guía de despacho, factura, formulario | TipoDocumento |
 | **ManejoSanitario** | Registro sanitario por animal | — |
+| **Genealogía** | Self-relations: `padreId`/`madreId` en Animal | — |
 
 ## Flujo de Autenticación
 
@@ -114,7 +123,7 @@ Page → Service (lib/api/{modulo}.ts) → ApiClient (lib/api/client.ts) → Bac
 
 - **TanStack Query** maneja cache de servidor, refetch, y estados de loading/error
 - **Cache manual** (`cache.ts`) previene throttling en endpoints frecuentes (titulares)
-- **Zustand** solo para estado local persistente (auth, offline queue)
+- **Zustand** solo para estado local persistente (auth, offline queue, notifications)
 
 ## Decisiones Técnicas
 

@@ -20,8 +20,9 @@ Plataforma web progresiva (PWA) para gestión integral de ganado bovino en Chile
 
 ### Backend (repo: backend-agente)
 - **Framework:** NestJS + Prisma + PostgreSQL
-- **Base URL:** configurable via `NEXT_PUBLIC_API_URL` (default: `http://localhost:8089`)
-- **API Key:** configurable via `NEXT_PUBLIC_API_KEY`
+- **Base URL:** configurable via `API_URL` (default: auto-detect por NODE_ENV)
+- **API Key:** configurable via `API_KEY` (sin prefijo NEXT_PUBLIC_)
+- **Config centralizada:** `src/lib/api/config.ts` (exports: `API_CONFIG`, `getApiConfig()`, `buildHeaders()`)
 - **Endpoints:** bajo `/api/v1/ganado/` (módulo ganado) y `/auth/` (autenticación)
 - **Auth:** JWT en localStorage (`access_token`)
 
@@ -32,37 +33,56 @@ src/
 ├── app/                          # App Router pages
 │   ├── (auth)/                   # Páginas públicas (login, registro)
 │   ├── dashboard/                # Páginas protegidas con AuthGuard
-│   │   ├── animales/             # CRUD animales
-│   │   ├── configuracion/        # Titulares y establecimientos
-│   │   ├── lotes/                # Gestión de lotes
+│   │   ├── animales/             # CRUD animales + detalle + genealogía
+│   │   ├── configuracion/        # Titulares, establecimientos, razas, alertas, cambiar-password
+│   │   ├── lotes/                # Gestión de lotes + stats GDP
 │   │   ├── movimientos/          # Movimientos de ganado
-│   │   ├── pesajes/              # Sesiones de pesaje
-│   │   └── reportes/             # Reportes y estadísticas
+│   │   ├── pesajes/              # Sesiones de pesaje + importar XR5000
+│   │   ├── sanitario/            # Eventos sanitarios + calendario
+│   │   ├── financiero/           # Costos + ventas + rentabilidad
+│   │   ├── reportes/             # Reportes y estadísticas (stock, mov, pesajes)
+│   │   ├── ayuda/                # Página de ayuda
+│   │   ├── error.tsx             # Error boundary del dashboard
+│   │   ├── layout.tsx            # Dashboard layout (AuthGuard + Sidebar + Header)
+│   │   └── page.tsx              # Dashboard principal (stats + gráficos)
 │   ├── layout.tsx                # Root layout (PWA, SW, fonts)
 │   └── page.tsx                  # Landing/redirect
 ├── components/
 │   ├── animales/                 # Componentes específicos de animales
 │   ├── auth/                     # AuthGuard, login forms
-│   ├── dashboard/                # Widgets del dashboard
+│   ├── dashboard/                # Widgets: skeleton, error-state, refresh-button
 │   ├── establecimientos/         # CRUD establecimientos
 │   ├── layout/                   # Sidebar, Header
+│   ├── notifications/            # notification-center, alert-checker
+│   ├── offline/                  # install-prompt, sync-manager
 │   ├── titulares/                # CRUD titulares
-│   └── ui/                       # shadcn/ui components
+│   └── ui/                       # shadcn/ui components (22 archivos)
 ├── lib/
 │   ├── api/                      # API clients por módulo
+│   │   ├── config.ts             # Config centralizada (API_URL, API_KEY, buildHeaders)
 │   │   ├── client.ts             # ApiClient base (singleton)
+│   │   ├── auth-client.ts        # Service: auth (login, registro)
 │   │   ├── cache.ts              # Cache en memoria (5 min TTL)
 │   │   ├── animales.ts           # Service: animales
 │   │   ├── establecimientos.ts   # Service: establecimientos
-│   │   ├── titulares.ts          # Service: titulares
+│   │   ├── titulares.ts          # Service: titulares (client-side)
+│   │   ├── titulares-actions.ts  # Server actions: titulares
+│   │   ├── server-actions.ts     # Server actions genéricas
 │   │   ├── lotes.ts              # Service: lotes
 │   │   ├── pesajes.ts            # Service: pesajes
 │   │   ├── movimientos.ts        # Service: movimientos
 │   │   ├── razas.ts              # Service: razas
+│   │   ├── sanitario.ts          # Service: sanitario
+│   │   ├── financiero.ts         # Service: financiero (costos + ventas)
 │   │   └── dashboard.ts          # Service: dashboard stats
+│   ├── alerts/                   # Motor de alertas automáticas
+│   │   └── alert-engine.ts       # Alertas: sanitario, ventas, movimientos
+│   ├── offline/                  # Offline/PWA support
+│   │   └── sync-queue.ts         # IndexedDB sync queue + SyncManager
 │   └── utils.ts                  # cn() helper (clsx + tailwind-merge)
 ├── stores/
 │   ├── auth-store.ts             # Zustand: auth state (persist)
+│   ├── notifications-store.ts    # Zustand: notifications (persist, max 50)
 │   └── offline-store.ts          # Zustand: offline queue
 └── types/
     └── index.ts                  # TypeScript types compartidos

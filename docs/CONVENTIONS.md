@@ -1,6 +1,6 @@
 # Convenciones de Desarrollo — Mi Ganado
 
-**Última actualización:** 2026-02-08
+**Última actualización:** 2026-02-11
 
 ## Estructura de un Módulo CRUD
 
@@ -95,6 +95,7 @@ const form = useForm<FormData>({
 |---------------|-------------|-------------|
 | Datos del servidor | TanStack Query | Listas, detalles, cualquier dato de la API |
 | Auth / sesión | Zustand (`auth-store`) | Login state, user info |
+| Notificaciones | Zustand (`notifications-store`) | Alertas, centro de notificaciones (persist, max 50) |
 | Offline queue | Zustand (`offline-store`) | Acciones pendientes sin conexión |
 | Formularios | React Hook Form | Estado local del formulario |
 | UI temporal | `useState` | Modales, toggles, filtros locales |

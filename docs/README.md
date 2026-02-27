@@ -1,6 +1,6 @@
 # Mi Ganado — Índice de Documentación
 
-**Última actualización:** 2026-02-11
+**Última actualización:** 2026-02-24
 
 Plataforma web progresiva (PWA) para gestión integral de ganado bovino en Chile. Centraliza trazabilidad, cumplimiento normativo SIPEC/SAG y operaciones ganaderas con soporte offline-first.
 
@@ -10,8 +10,8 @@ Plataforma web progresiva (PWA) para gestión integral de ganado bovino en Chile
 
 | Documento | Descripción | Actualizado |
 |-----------|-------------|-------------|
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | Arquitectura técnica, stack, modelo de datos, diagramas Mermaid | 2026-02-11 |
-| [STATUS.md](./STATUS.md) | Estado actual de módulos, bugs activos, próximas prioridades | 2026-02-11 |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | Arquitectura técnica, stack, modelo de datos, diagramas Mermaid | 2026-02-24 |
+| [STATUS.md](./STATUS.md) | Estado actual de módulos, bugs activos, próximas prioridades | 2026-02-24 |
 | [CONVENTIONS.md](./CONVENTIONS.md) | Patrones de código, naming, estructura de módulos CRUD | 2026-02-11 |
 | [ANALITICA-VERCEL.md](./ANALITICA-VERCEL.md) | Informe de analítica, métricas de rendimiento y monitoreo | 2026-02-09 |
 
@@ -34,6 +34,7 @@ Plataforma web progresiva (PWA) para gestión integral de ganado bovino en Chile
 | [RESUMEN-IMPLEMENTACION.md](./implementation/RESUMEN-IMPLEMENTACION.md) | Resumen de avance frontend ↔ backend por módulo | 2026-01-30 |
 | [IMPLEMENTACION-RESPONSIVE-MOBILE.md](./implementation/IMPLEMENTACION-RESPONSIVE-MOBILE.md) | Responsive mobile: Sheet nav, card views, filtros, paginación | 2026-02-09 |
 | [IMPLEMENTACION-VERCEL.md](./implementation/IMPLEMENTACION-VERCEL.md) | Configuración y despliegue en Vercel | 2026-02-09 |
+| [DASHBOARD-ANALYTICS-SPRINT10.md](./implementation/DASHBOARD-ANALYTICS-SPRINT10.md) | Dashboard Analytics Avanzado: Eficiencia + Predicciones + Export PDF | 2026-02-24 |
 
 ## Troubleshooting (`troubleshooting/`)
 

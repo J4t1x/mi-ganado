@@ -1,6 +1,6 @@
 # Arquitectura Técnica — Mi Ganado
 
-**Última actualización:** 2026-02-11
+**Última actualización:** 2026-02-24
 
 ## Diagrama General
 
@@ -58,6 +58,8 @@ graph TB
 | Temas | next-themes | 0.4.6 |
 | Iconos | Lucide React | 0.563.0 |
 | Analytics | @vercel/analytics + @vercel/speed-insights | 1.6.1 / 1.3.1 |
+| Export PDF | jspdf + html2canvas | 4.2.0 / 1.4.1 |
+| Linting | ESLint | 10.0.2 |
 | Backend | NestJS + Prisma | — |
 | DB | PostgreSQL | — |
 | Deploy FE | Vercel | — |

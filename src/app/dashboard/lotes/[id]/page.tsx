@@ -93,6 +93,7 @@ export default function LoteDetailPage() {
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
   const [animalToRemove, setAnimalToRemove] = useState<string | null>(null);
   const [loadingAction, setLoadingAction] = useState(false);
+  const [loadingAvailableAnimals, setLoadingAvailableAnimals] = useState(false);
   const [sesiones, setSesiones] = useState<SesionPesaje[]>([]);
 
   useEffect(() => {
@@ -121,18 +122,54 @@ export default function LoteDetailPage() {
   const loadAvailableAnimals = async () => {
     if (!lote) return;
     
+    setLoadingAvailableAnimals(true);
     try {
+      // Intentar cargar animales disponibles con un límite mayor para asegurar que se obtengan todos
       const response = await animalesService.getAll({
         establecimientoId: lote.establecimientoId,
-        limit: 100,
+        limit: 500, // Aumentar el límite para obtener más animales disponibles
       });
       
+      // Filtrar animales que no están en ningún lote o que ya están en este lote
       const available = response.data.filter(
         (animal) => !animal.loteId || animal.loteId === lote.id
       );
+      
       setAvailableAnimals(available);
+      
+      if (available.length === 0) {
+        toast.info('No hay animales disponibles para agregar a este lote');
+      }
     } catch (error: unknown) {
+      console.error('Error al cargar animales disponibles:', error);
       toast.error(error instanceof Error ? error.message : 'Error al cargar animales disponibles');
+      // Intentar con un enfoque alternativo si falla
+      try {
+        const fallbackResponse = await animalesService.getAll({
+          limit: 500,
+        });
+        
+        // Filtrar manualmente por establecimiento y lote
+        const available = fallbackResponse.data.filter(
+          (animal) => (
+            (animal.establecimientoActual?.id === lote.establecimientoId) && 
+            (!animal.loteId || animal.loteId === lote.id)
+          )
+        );
+        
+        setAvailableAnimals(available);
+        
+        if (available.length > 0) {
+          toast.success(`Se encontraron ${available.length} animales disponibles`);
+        } else {
+          toast.info('No hay animales disponibles para agregar a este lote');
+        }
+      } catch (fallbackError) {
+        console.error('Error en método alternativo para cargar animales:', fallbackError);
+        toast.error('No se pudieron cargar los animales disponibles. Intente nuevamente.');
+      }
+    } finally {
+      setLoadingAvailableAnimals(false);
     }
   };
 
@@ -514,7 +551,12 @@ export default function LoteDetailPage() {
             </div>
             <Separator />
             <div className="space-y-2 max-h-[400px] overflow-y-auto">
-              {filteredAvailableAnimals.length === 0 ? (
+              {loadingAvailableAnimals ? (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin mb-2" />
+                  <p className="text-sm text-muted-foreground">Cargando animales disponibles...</p>
+                </div>
+              ) : filteredAvailableAnimals.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
                   No hay animales disponibles para agregar
                 </p>

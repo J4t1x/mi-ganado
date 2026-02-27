@@ -15,6 +15,7 @@
 | **Sprint 7** | Notificaciones y Alertas | ✅ Completado | 2026-02-09 |
 | **Sprint 8** | Responsive Mobile Dashboard | ✅ Completado | 2026-02-09 |
 | **Sprint 9** | Endpoints Backend | ✅ Completado | 2026-02-09 |
+| **Sprint 10** | Dashboard Analytics Avanzado | ✅ Completado | 2026-02-23 |
 
 ### Sprint 1 — Detalle
 - SP-01: Movimientos crear conectado a API ✅
@@ -91,6 +92,14 @@
 - FE: Card Genealogía en detalle animal (padre, madre, lista crías con links) ✅
 - FE: Types `AnimalGenealogiaRef`, `AnimalCriaRef` + campos en interfaces ✅
 
+### Sprint 10 — Detalle (Dashboard Analytics Avanzado)
+- SP-51: Corrección estructura Tabs en dashboard principal (shadcn/ui Tabs) ✅
+- SP-52: Componentes Eficiencia Operativa (4 componentes: dashboard, stats-cards, comparativa-historica, comparativa-sector) ✅
+- SP-53: Componentes Análisis Predictivo (4 componentes: dashboard, proyeccion-inventario, alertas-umbrales, recomendaciones-panel) ✅
+- SP-54: Funcionalidad exportación PDF (hook useExportPdf + ExportPdfButton + integración en dashboards) ✅
+- SP-55: Endpoints backend eficiencia-stats y predicciones (DTOs + Service + Controller) ✅
+- SP-56: Dashboard con 6 tabs funcionales (General, Financiero, Peso, Sanitario, Eficiencia, Predicciones) ✅
+
 ## Módulos del Dashboard
 
 | Módulo | Estado | Páginas | Service API | Componentes |
@@ -103,7 +112,13 @@
 | **Pesajes** | ✅ Completo | Listado + detalle + crear + importar XR5000 | `pesajes.ts` | `pesajes/` |
 | **Movimientos** | ✅ Completo | Listado + crear + detalle + confirmar + selector animales | `movimientos.ts` | `movimientos/` |
 | **Reportes** | ✅ Completo | Tabs (Stock/Movimientos/Pesajes) + filtros + CSV export | `dashboard.ts` + services | `reportes/` |
-| **Dashboard** | ✅ Completo | Stats + PieChart + BarChart + tabla movimientos | `dashboard.ts` | `dashboard/` |
+| **Dashboard** | ✅ Completo | 6 tabs: General, Financiero, Peso, Sanitario, Eficiencia, Predicciones + Export PDF | `dashboard.ts` | `dashboard/` |
+| **Dashboard - General** | ✅ Completo | Stats + PieChart + BarChart + tabla movimientos | `dashboard.ts` | `dashboard/` |
+| **Dashboard - Financiero** | ✅ Completo | Stats cards + tendencia precios + costos por categoría | `dashboard.ts` | `dashboard/financiero/` |
+| **Dashboard - Peso** | ✅ Completo | Curvas crecimiento + ganancia diaria + proyecciones | `dashboard.ts` | `dashboard/peso/` |
+| **Dashboard - Sanitario** | ✅ Completo | Alertas + incidencias por tipo + mapa ubicaciones | `dashboard.ts` | `dashboard/sanitario/` |
+| **Dashboard - Eficiencia** | ✅ Completo | KPIs operativos + comparativas históricas + benchmarking sector | `dashboard.ts` | `dashboard/eficiencia/` |
+| **Dashboard - Predicciones** | ✅ Completo | Proyección inventario + alertas umbrales + recomendaciones | `dashboard.ts` | `dashboard/predicciones/` |
 | **Auth** | ✅ Completo | Login + registro + forgot password + cambiar contraseña | `auth-client.ts` | `(auth)/` |
 | **Sanitario** | ✅ Completo | Listado + detalle + crear + editar + calendario | `sanitario.ts` | `sanitario/` |
 | **Financiero** | ✅ Completo | Costos + ventas + rentabilidad + PieChart | `financiero.ts` | `financiero/` |
@@ -122,6 +137,7 @@
 ## Dependencias Nuevas
 - `recharts` — Gráficos interactivos (Sprint 2)
 - `shadcn/ui Sheet` — Menú lateral móvil (Sprint 8)
+- `jspdf` + `html2canvas` — Exportación PDF de dashboards (Sprint 10)
 
 ## Bugs Activos
 
@@ -136,7 +152,8 @@
 
 ## Próximas Prioridades
 
-1. **Migrar DB Railway** — `prisma migrate deploy` para nuevos modelos (sanitario, financiero, genealogía)
-2. **Testing** — Unit tests + E2E con Playwright
+1. **Testing** — Unit tests + E2E con Playwright para nuevos componentes de dashboard
+2. **Optimización Backend** — Implementar cálculos reales de conversión alimenticia y costos (requiere módulo de alimentación)
 3. **Integración SIPEC/SAG** — Trazabilidad oficial
 4. **Módulo Reproducción** — Servicios, gestación, partos
+5. **Machine Learning** — Modelos predictivos más avanzados para proyecciones de inventario

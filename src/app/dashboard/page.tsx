@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -21,6 +22,9 @@ import {
   TrendingUp,
   TrendingDown,
   Building2,
+  DollarSign,
+  Activity,
+  Syringe,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -40,6 +44,11 @@ import { dashboardService, DashboardStats, MovimientoReciente, EstablecimientoSt
 import { DashboardSkeleton } from '@/components/dashboard/dashboard-skeleton';
 import { ErrorState } from '@/components/dashboard/error-state';
 import { RefreshButton } from '@/components/dashboard/refresh-button';
+import { FinancieroDashboard } from '@/components/dashboard/financiero/financiero-dashboard';
+import { PesoDashboard } from '@/components/dashboard/peso/peso-dashboard';
+import { SanitarioDashboard } from '@/components/dashboard/sanitario/sanitario-dashboard';
+import { EficienciaDashboard } from '@/components/dashboard/eficiencia/eficiencia-dashboard';
+import { PrediccionesDashboard } from '@/components/dashboard/predicciones/predicciones-dashboard';
 import { toast } from 'sonner';
 
 function getMovementBadgeVariant(tipo: string) {
@@ -219,170 +228,221 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Últimos Movimientos</CardTitle>
-                <CardDescription>
-                  Movimientos recientes de ganado
-                </CardDescription>
-              </div>
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/dashboard/movimientos">Ver todos</Link>
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {movimientos.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No hay movimientos recientes
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Fecha</TableHead>
-                      <TableHead className="text-center">Animales</TableHead>
-                      <TableHead>Origen → Destino</TableHead>
-                      <TableHead>Estado</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {movimientos.map((mov) => {
-                      const origen = mov.establecimientoOrigen?.nombre || mov.titularOrigen?.nombreRazonSocial || 'N/A';
-                      const destino = mov.establecimientoDestino?.nombre || mov.titularDestino?.nombreRazonSocial || 'N/A';
-                      
-                      return (
-                        <TableRow key={mov.id}>
-                          <TableCell>
-                            <Badge variant={getMovementBadgeVariant(mov.tipo)}>
-                              {mov.tipo}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {new Date(mov.fecha).toLocaleDateString('es-CL')}
-                          </TableCell>
-                          <TableCell className="text-center font-medium">
-                            {mov.cantidadAnimales}
-                          </TableCell>
-                          <TableCell className="max-w-[200px] truncate">
-                            <span className="text-muted-foreground">{origen}</span>
-                            <span className="mx-2">→</span>
-                            <span>{destino}</span>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={getStatusBadgeVariant(mov.estado)}>
-                              {mov.estado}
-                            </Badge>
-                          </TableCell>
+      <Tabs defaultValue="general" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
+          <TabsTrigger value="general" className="flex items-center gap-2">
+            <Beef className="h-4 w-4" />
+            <span className="hidden sm:inline">General</span>
+          </TabsTrigger>
+          <TabsTrigger value="financiero" className="flex items-center gap-2">
+            <DollarSign className="h-4 w-4" />
+            <span className="hidden sm:inline">Financiero</span>
+          </TabsTrigger>
+          <TabsTrigger value="peso" className="flex items-center gap-2">
+            <Scale className="h-4 w-4" />
+            <span className="hidden sm:inline">Peso</span>
+          </TabsTrigger>
+          <TabsTrigger value="sanitario" className="flex items-center gap-2">
+            <Syringe className="h-4 w-4" />
+            <span className="hidden sm:inline">Sanitario</span>
+          </TabsTrigger>
+          <TabsTrigger value="eficiencia" className="flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            <span className="hidden sm:inline">Eficiencia</span>
+          </TabsTrigger>
+          <TabsTrigger value="predicciones" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            <span className="hidden sm:inline">Predicciones</span>
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="general" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Últimos Movimientos</CardTitle>
+                    <CardDescription>
+                      Movimientos recientes de ganado
+                    </CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/dashboard/movimientos">Ver todos</Link>
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {movimientos.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No hay movimientos recientes
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Tipo</TableHead>
+                          <TableHead>Fecha</TableHead>
+                          <TableHead className="text-center">Animales</TableHead>
+                          <TableHead>Origen → Destino</TableHead>
+                          <TableHead>Estado</TableHead>
                         </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                      </TableHeader>
+                      <TableBody>
+                        {movimientos.map((mov) => {
+                          const origen = mov.establecimientoOrigen?.nombre || mov.titularOrigen?.nombreRazonSocial || 'N/A';
+                          const destino = mov.establecimientoDestino?.nombre || mov.titularDestino?.nombreRazonSocial || 'N/A';
+                          
+                          return (
+                            <TableRow key={mov.id}>
+                              <TableCell>
+                                <Badge variant={getMovementBadgeVariant(mov.tipo)}>
+                                  {mov.tipo}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-muted-foreground">
+                                {new Date(mov.fecha).toLocaleDateString('es-CL')}
+                              </TableCell>
+                              <TableCell className="text-center font-medium">
+                                {mov.cantidadAnimales}
+                              </TableCell>
+                              <TableCell className="max-w-[200px] truncate">
+                                <span className="text-muted-foreground">{origen}</span>
+                                <span className="mx-2">→</span>
+                                <span>{destino}</span>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant={getStatusBadgeVariant(mov.estado)}>
+                                  {mov.estado}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Estado del Ganado</CardTitle>
-            <CardDescription>
-              Distribución por estado
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {stats.animalesActivos > 0 || stats.animalesVendidos > 0 || stats.animalesMuertos > 0 ? (
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: 'Activos', value: stats.animalesActivos },
-                      { name: 'Vendidos', value: stats.animalesVendidos },
-                      { name: 'Muertos', value: stats.animalesMuertos },
-                    ].filter((d) => d.value > 0)}
-                    cx="50%"
-                    cy="45%"
-                    innerRadius={40}
-                    outerRadius={65}
-                    paddingAngle={3}
-                    dataKey="value"
+            <Card>
+              <CardHeader>
+                <CardTitle>Estado del Ganado</CardTitle>
+                <CardDescription>
+                  Distribución por estado
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {stats.animalesActivos > 0 || stats.animalesVendidos > 0 || stats.animalesMuertos > 0 ? (
+                  <ResponsiveContainer width="100%" height={220}>
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: 'Activos', value: stats.animalesActivos },
+                          { name: 'Vendidos', value: stats.animalesVendidos },
+                          { name: 'Muertos', value: stats.animalesMuertos },
+                        ].filter((d) => d.value > 0)}
+                        cx="50%"
+                        cy="45%"
+                        innerRadius={40}
+                        outerRadius={65}
+                        paddingAngle={3}
+                        dataKey="value"
+                      >
+                        <Cell fill="#16a34a" />
+                        <Cell fill="#2563eb" />
+                        <Cell fill="#6b7280" />
+                      </Pie>
+                      <Tooltip formatter={(value) => [Number(value).toLocaleString(), 'Animales']} />
+                      <Legend verticalAlign="bottom" height={36} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Sin datos de animales
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {establecimientos.length > 0 && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Stock por Establecimiento</CardTitle>
+                    <CardDescription>Cantidad de animales por ubicación</CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/dashboard/configuracion/establecimientos">Ver todos</Link>
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart
+                    data={establecimientos.map((e) => ({
+                      nombre: e.nombre.length > 12 ? e.nombre.slice(0, 12) + '...' : e.nombre,
+                      animales: e.cantidadAnimales,
+                      fullName: e.nombre,
+                    }))}
+                    margin={{ top: 5, right: 10, left: -10, bottom: establecimientos.length > 3 ? 40 : 5 }}
                   >
-                    <Cell fill="#16a34a" />
-                    <Cell fill="#2563eb" />
-                    <Cell fill="#6b7280" />
-                  </Pie>
-                  <Tooltip formatter={(value) => [Number(value).toLocaleString(), 'Animales']} />
-                  <Legend verticalAlign="bottom" height={36} />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                Sin datos de animales
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {establecimientos.length > 0 && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Stock por Establecimiento</CardTitle>
-                <CardDescription>Cantidad de animales por ubicación</CardDescription>
-              </div>
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/dashboard/configuracion/establecimientos">Ver todos</Link>
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart
-                data={establecimientos.map((e) => ({
-                  nombre: e.nombre.length > 12 ? e.nombre.slice(0, 12) + '...' : e.nombre,
-                  animales: e.cantidadAnimales,
-                  fullName: e.nombre,
-                }))}
-                margin={{ top: 5, right: 10, left: -10, bottom: establecimientos.length > 3 ? 40 : 5 }}
-              >
-                <defs>
-                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#34d399" stopOpacity={0.9} />
-                    <stop offset="100%" stopColor="#059669" stopOpacity={0.85} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis
-                  dataKey="nombre"
-                  className="text-xs"
-                  tick={{ fontSize: 11 }}
-                  angle={establecimientos.length > 3 ? -35 : 0}
-                  textAnchor={establecimientos.length > 3 ? 'end' : 'middle'}
-                  interval={0}
-                />
-                <YAxis className="text-xs" tick={{ fontSize: 11 }} width={35} />
-                <Tooltip
-                  formatter={(value) => [Number(value).toLocaleString(), 'Animales']}
-                  labelFormatter={(_label, payload) => {
-                    const item = (payload as Array<{ payload?: { fullName?: string } }>)?.[0]?.payload;
-                    return item?.fullName || String(_label);
-                  }}
-                  contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px' }}
-                />
-                <Bar dataKey="animales" fill="url(#barGradient)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      )}
+                    <defs>
+                      <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#34d399" stopOpacity={0.9} />
+                        <stop offset="100%" stopColor="#059669" stopOpacity={0.85} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis
+                      dataKey="nombre"
+                      className="text-xs"
+                      tick={{ fontSize: 11 }}
+                      angle={establecimientos.length > 3 ? -35 : 0}
+                      textAnchor={establecimientos.length > 3 ? 'end' : 'middle'}
+                      interval={0}
+                    />
+                    <YAxis className="text-xs" tick={{ fontSize: 11 }} width={35} />
+                    <Tooltip
+                      formatter={(value) => [Number(value).toLocaleString(), 'Animales']}
+                      labelFormatter={(_label, payload) => {
+                        const item = (payload as Array<{ payload?: { fullName?: string } }>)?.[0]?.payload;
+                        return item?.fullName || String(_label);
+                      }}
+                      contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px' }}
+                    />
+                    <Bar dataKey="animales" fill="url(#barGradient)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="financiero">
+          <FinancieroDashboard />
+        </TabsContent>
+        
+        <TabsContent value="peso">
+          <PesoDashboard />
+        </TabsContent>
+        
+        <TabsContent value="sanitario">
+          <SanitarioDashboard />
+        </TabsContent>
+        
+        <TabsContent value="eficiencia">
+          <EficienciaDashboard />
+        </TabsContent>
+        
+        <TabsContent value="predicciones">
+          <PrediccionesDashboard />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
